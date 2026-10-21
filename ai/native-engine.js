@@ -124,7 +124,7 @@ function answer(message) {
       bestScore = score;
     }
   }
-  if (bestEntry && bestScore >= 0.62) {
+  if (bestEntry && bestScore >= 0.55) {
     return { reply: bestEntry.answer, intent: bestEntry.id, confidence: Number(bestScore.toFixed(2)) };
   }
 
