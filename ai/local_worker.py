@@ -31,6 +31,7 @@ def main() -> None:
     })
 
     for line in sys.stdin:
+        request: object = {}
         try:
             request = json.loads(line)
             request_id = request.get("id")
