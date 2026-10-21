@@ -36,8 +36,9 @@ async function download(url, destination, redirects = 0) {
 }
 
 async function main() {
-  if (process.env.AMILCAR_AI_AUTO_INSTALL_MODEL === "0") {
-    console.log("[AMILCAR AI] Descarga automática desactivada por AMILCAR_AI_AUTO_INSTALL_MODEL=0.");
+  if (process.env.AMILCAR_AI_AUTO_INSTALL_MODEL !== "1") {
+    console.log("[AMILCAR AI] Instalación ligera: no se descarga ningún modelo durante npm install.");
+    console.log("[AMILCAR AI] Para instalar el modelo local de forma opcional, ejecuta: AMILCAR_AI_AUTO_INSTALL_MODEL=1 node node_modules/amilcar-ai/scripts/install-model.js");
     return;
   }
 
