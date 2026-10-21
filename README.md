@@ -34,7 +34,7 @@ Los errores incluyen `code` y, cuando corresponde, `status` para poder gestionar
 
 ### Motor híbrido local (experimental)
 
-La rama `feat/ami-nano-hybrid-sdk-public` añade el modo `hybrid`, que usa respuestas revisadas y conocimiento local en español. No requiere API HTTP, PyTorch ni un checkpoint AMI-Base; sí requiere Python 3 y que se mantengan los archivos `ami-nano/` y `data/` incluidos en el paquete.
+El SDK incluye el modo `hybrid`, que usa respuestas revisadas y conocimiento local en español. No requiere API HTTP, PyTorch ni un checkpoint AMI-Base; sí requiere Python 3 y que se mantengan los archivos `ami-nano/` y `data/` incluidos en el paquete.
 
 ```js
 const { AmilcarAI } = require("amilcar-ai");
@@ -44,9 +44,9 @@ const resultado = await ia.chat("Explícame la fotosíntesis");
 console.log(resultado.reply);
 ```
 
-Instala esta versión de desarrollo con:
+Instala el SDK desde la rama oficial `main` con:
 
-    npm install github:AmilcarGit/AMILCAR-AI#feat/ami-nano-hybrid-sdk-public
+    npm install github:AmilcarGit/AMILCAR-AI
 
 El modo híbrido es experimental: busca coincidencias en diálogos y temas locales, y aplica reglas para rechazar candidatos neuronales de baja calidad. No garantiza responder sobre cualquier tema y debe indicar cuando no encuentra información fiable. El generador neuronal es opcional y necesita un archivo de modelo compatible; sin ese archivo, el motor conserva las respuestas locales y usa el fallback honesto. Cada consulta ejecuta Python, así que la latencia puede ser mayor que la de un worker persistente.
 
