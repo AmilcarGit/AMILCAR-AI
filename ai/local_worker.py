@@ -53,7 +53,8 @@ def main() -> None:
                 if not runner.available:
                     response = {
                         "id": request_id,
-                        "error": "No se encontró un modelo entrenado. Ejecuta: python -m ai.training.train",
+                        "error": runner.load_error
+                        or "No se encontró un modelo entrenado. Ejecuta: python -m ai.training.train",
                         "code": "MODEL_NOT_FOUND",
                     }
                 else:

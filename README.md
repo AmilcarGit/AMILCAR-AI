@@ -273,6 +273,15 @@ Para entrenar el modelo de demostración:
 python -m ai.training.train --steps 300
 ```
 
+Con tus propios datos y un modelo más grande (el entrenamiento reporta pérdida de validación y perplexity):
+
+```bash
+python -m ai.training.train --data data/processed/train.txt --val data/processed/val.txt \
+  --vocab-size 4000 --d-model 256 --n-layers 6 --max-seq-len 512 --block-size 256 --steps 20000
+```
+
+El modelo (`ai/model/transformer.py`) está escrito a mano: RMSNorm, posiciones rotatorias (RoPE), atención causal con KV cache y capa SwiGLU. La generación admite `temperature`, `top_k`, `top_p` y `seed`. Los checkpoints de versiones anteriores (otro formato) no se pueden cargar: hay que reentrenar.
+
 Para iniciar la API local:
 
 ```bash
@@ -308,7 +317,7 @@ ids = tok.encode("Hola, ¿cómo estás?")
 print(tok.decode(ids))
 ```
 
-El texto escrito por un usuario nunca se interpreta como token de control (`allow_special=False` por defecto). Todavía no está conectado al entrenamiento del modelo, que sigue usando caracteres.
+El texto escrito por un usuario nunca se interpreta como token de control (`allow_special=False` por defecto). El entrenamiento (`ai.training.train`) lo usa automáticamente y guarda el tokenizador dentro del checkpoint.
 
 ### Interfaz web
 
@@ -366,10 +375,10 @@ Los flujos de GitHub Actions ejecutan comprobaciones automatizadas. Consulta la 
 - [x] Añadir un motor nativo ligero sin APIs ni descargas de modelos.
 - [x] Tokenizador BPE propio con pruebas (`ai/tokenizer.py`).
 - [x] Preparación reproducible del corpus: limpieza, deduplicación y validación (`ai/training/prepare_data.py`).
-- [ ] Conectar el tokenizador BPE al entrenamiento y al modelo.
-- [ ] Reemplazar `nn.TransformerEncoder` por bloques propios (RMSNorm, RoPE, atención causal con KV cache).
-- [ ] Entrenamiento con validación, perplexity y scheduler de learning rate.
-- [ ] Muestreo con top-k y top-p en la generación.
+- [x] Tokenizador BPE conectado al entrenamiento y a la generación.
+- [x] Transformer propio con RMSNorm, RoPE, atención causal y KV cache.
+- [x] Entrenamiento con validación, perplexity y scheduler de learning rate.
+- [x] Muestreo con top-k y top-p en la generación.
 - [ ] Reunir un corpus grande en español con licencia verificada.
 - [ ] Ampliar y evaluar la base de conocimientos del motor nativo.
 - [ ] Validar la instalación automática en diferentes versiones de Termux y Linux.
