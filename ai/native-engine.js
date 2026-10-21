@@ -113,7 +113,8 @@ function answer(message, context = {}) {
   const previousIntent = context && typeof context.lastIntent === "string" ? context.lastIntent : "";
   const followUp = /^(explica mas|explicame mas|amplia|amplia la respuesta|dame mas detalles|continua|sigue|pon un ejemplo|dame un ejemplo|otro ejemplo|por que|porque|como asi)$/.test(query);
   if (followUp && previousIntent) {
-    const previous = KNOWLEDGE.find((item) => item.id === previousIntent);
+    const knowledge = Array.isArray(context.knowledge) ? context.knowledge : KNOWLEDGE;
+    const previous = knowledge.find((item) => item.id === previousIntent);
     if (previous) {
       const examples = {
         fotosintesis: "Por ejemplo, una planta junto a una ventana recibe luz y la utiliza para fabricar azúcares.",
@@ -158,7 +159,8 @@ function answer(message, context = {}) {
 
   let bestEntry = null;
   let bestScore = 0;
-  for (const entry of KNOWLEDGE) {
+  const knowledge = Array.isArray(context.knowledge) ? context.knowledge : KNOWLEDGE;
+  for (const entry of knowledge) {
     const score = scoreEntry(query, entry);
     if (score > bestScore) {
       bestEntry = entry;
@@ -182,7 +184,7 @@ function hash(value) {
   return result;
 }
 
-function addKnowledge(entry) {
+function addKnowledge(entry, knowledge = KNOWLEDGE) {
   if (!entry || typeof entry !== "object" || typeof entry.id !== "string" || !entry.id.trim()) {
     throw new TypeError("El conocimiento necesita un id de texto.");
   }
@@ -194,10 +196,10 @@ function addKnowledge(entry) {
   }
   const normalizedId = normalize(entry.id).replace(/\s+/g, "_");
   const normalizedTerms = entry.terms.map((term) => term.trim());
-  const existing = KNOWLEDGE.findIndex((item) => item.id === normalizedId);
+  const existing = knowledge.findIndex((item) => item.id === normalizedId);
   const item = { id: normalizedId, terms: normalizedTerms, answer: entry.answer.trim() };
-  if (existing >= 0) KNOWLEDGE[existing] = item;
-  else KNOWLEDGE.push(item);
+  if (existing >= 0) knowledge[existing] = item;
+  else knowledge.push(item);
   return { id: normalizedId, terms: normalizedTerms.length };
 }
 
