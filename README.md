@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://files.catbox.moe/qbg4v1.png" alt="AMILCAR AI — logo oficial" width="220">
+<a href="https://postimg.cc/phCqXgvP"><img src="https://i.postimg.cc/3N569Tb0/file-0000000071c8820e950580dbc623005e.png" alt="AMILCAR AI — logo oficial" width="220"></a>
 
 # AMILCAR AI
 
@@ -176,7 +176,7 @@ python -m venv .venv
 Activa el entorno:
 
 - Linux, macOS o Termux: `source .venv/bin/activate`
-- Windows PowerShell: `.venv\Scripts\Activate.ps1`
+- Windows PowerShell: `.venv\\Scripts\\Activate.ps1`
 
 Instala dependencias:
 
