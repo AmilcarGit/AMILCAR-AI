@@ -5,6 +5,8 @@ const engine = require("./ai/native-engine.js");
 class NativeAmilcarAI {
   constructor(options = {}) {
     this.mode = "native";
+    this.history = [];
+    this.maxHistory = Number.isSafeInteger(options.maxHistory) && options.maxHistory >= 0 ? Math.min(options.maxHistory, 20) : 6;
     this.maxMessageLength = Number.isSafeInteger(options.maxMessageLength) && options.maxMessageLength > 0
       ? options.maxMessageLength
       : 2000;
@@ -23,7 +25,13 @@ class NativeAmilcarAI {
       error.code = "MESSAGE_TOO_LONG";
       throw error;
     }
-    const result = engine.answer(text);
+    const previous = [...this.history].reverse().find((item) => item.intent && item.intent !== "unknown");
+    const result = engine.answer(text, { lastIntent: previous?.intent || "" });
+    if (this.maxHistory > 0) {
+      this.history.push({ role: "user", text: text.trim() });
+      this.history.push({ role: "assistant", text: result.reply, intent: result.intent });
+      if (this.history.length > this.maxHistory * 2) this.history.splice(0, this.history.length - this.maxHistory * 2);
+    }
     return {
       reply: result.reply,
       model: "AMILCAR-Native-1",
@@ -32,6 +40,18 @@ class NativeAmilcarAI {
       intent: result.intent,
       confidence: result.confidence
     };
+  }
+
+  getHistory() {
+    return this.history.map((item) => ({ ...item }));
+  }
+
+  clearHistory() {
+    this.history = [];
+  }
+
+  addKnowledge(entry) {
+    return engine.addKnowledge(entry);
   }
 
   async generate(message) {
