@@ -87,7 +87,7 @@ class AmilcarAI {
       });
       const reply = stdout.trim();
       if (!reply) throw new AmilcarAIError("El motor híbrido no devolvió texto.", { code: "EMPTY_RESPONSE" });
-      return { reply, model: "AMI-Nano-Hybrid", trained: false, mode: "hybrid" };
+      return { reply, model: process.env.AMILCAR_AI_LLM_MODEL ? "AMI-Nano-Hybrid + GGUF local" : "AMI-Nano-Hybrid", trained: false, mode: "hybrid" };
     } catch (cause) {
       if (cause instanceof AmilcarAIError) throw cause;
       if (signal?.aborted || cause?.name === "AbortError") throw new AmilcarAIError("La solicitud fue cancelada.", { code: "ABORTED", cause });
