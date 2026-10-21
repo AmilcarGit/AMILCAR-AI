@@ -50,6 +50,28 @@ Instala el SDK desde la rama oficial `main` con:
 
 El modo híbrido es experimental: busca coincidencias en diálogos y temas locales, y aplica reglas para rechazar candidatos neuronales de baja calidad. No garantiza responder sobre cualquier tema y debe indicar cuando no encuentra información fiable. El generador neuronal es opcional y necesita un archivo de modelo compatible; sin ese archivo, el motor conserva las respuestas locales y usa el fallback honesto. Cada consulta ejecuta Python, así que la latencia puede ser mayor que la de un worker persistente.
 
+### Generación automática con un modelo GGUF local en Android/Termux
+
+El modo híbrido puede usar opcionalmente un modelo de lenguaje GGUF mediante `llama.cpp`. El modelo se descarga por separado y permanece en el dispositivo; no se sube a GitHub ni se envía a una API externa. Si no configuras el modelo, se conserva el comportamiento híbrido anterior.
+
+En Termux (Android de 64 bits):
+
+    pkg update
+    pkg install llama-cpp curl -y
+    mkdir -p ~/models
+    curl -L --fail --retry 3 "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf?download=true" -o ~/models/qwen2.5-0.5b-instruct-q4_k_m.gguf
+
+El archivo ocupa aproximadamente 491 MB; reserva espacio adicional para la memoria de ejecución. Es un modelo pequeño de instrucciones para pruebas, no una garantía de respuestas correctas ni de calidad comparable con modelos grandes.
+
+Configura las variables en la misma sesión de Termux antes de iniciar BaseBot:
+
+    export AMILCAR_AI_LLM_MODEL="$HOME/models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
+    export AMILCAR_AI_LLM_CLI="llama-cli"
+    export AMILCAR_AI_LLM_TOKENS=180
+    export AMILCAR_AI_LLM_CONTEXT=2048
+
+El SDK busca primero una respuesta local revisada; si no encuentra una coincidencia, intenta generar una respuesta con el modelo GGUF y aplica comprobaciones básicas de texto. Si el modelo no está disponible o falla, mantiene el comportamiento anterior. Variables opcionales: `AMILCAR_AI_LLM_TIMEOUT` (segundos, por defecto 90), `AMILCAR_AI_LLM_TOKENS` (32–400) y `AMILCAR_AI_LLM_CONTEXT` (512–8192).
+
 ### Ejemplo para Baileys
 
 Consulta `examples/baileys-handler.cjs`. En tu bot instala el SDK y copia el ejemplo a tu estructura; luego registra el manejador con tu socket:
