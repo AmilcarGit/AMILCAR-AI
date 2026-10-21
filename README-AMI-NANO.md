@@ -1,45 +1,38 @@
-# AMILCAR AI — AMI Nano 2.0
+# AMILCAR AI — AMI Nano 2.1
 
-AMI Nano 2.0 es un experimento de red neuronal de caracteres que se entrena desde cero y ejecuta localmente con Python estándar. No utiliza APIs, pesos preentrenados, PyTorch ni NumPy. Está pensado como MVP educativo para Termux/Android ARM64, no como sustituto de un LLM moderno.
+AMI Nano 2.1 combina dos componentes locales y ligeros: una base de conocimientos y diálogos en español, y el experimento neuronal AMI Nano entrenado desde pesos aleatorios. No utiliza APIs comerciales, servicios web, PyTorch, NumPy ni pesos preentrenados. Es un MVP educativo, no un modelo de lenguaje grande.
 
-## Instalar y probar en Termux
+## Termux / Android ARM64
 
 ```bash
 pkg install nodejs python git -y
-git clone -b feat/ami-nano-termux https://github.com/AmilcarGit/AMILCAR-AI.git
+git clone -b feat/ami-nano-2-1-local-es https://github.com/AmilcarGit/AMILCAR-AI.git
 cd AMILCAR-AI
 npm install
+npm run ami:chat-es -- "¿Qué es JavaScript?"
+npm run ami:chat-interactivo
+npm run ami:test
 npm run ami:train
 npm run ami:chat -- "hola"
-npm run ami:test
 ```
 
-Si ya tienes la rama clonada, ejecuta `git pull origin feat/ami-nano-termux` antes de probar. La instalación no descarga modelos de internet. El entrenamiento genera `artifacts/ami-nano.json` localmente.
+La base de conocimientos y el chat funcionan sin entrenar el modelo neuronal y no descargan modelos. El entrenamiento neuronal es un componente separado: `ami:train` genera un checkpoint local pequeño en `artifacts/ami-nano.json`.
 
-## Chat local en español (MVP conversacional)
+## Cómo funciona el chat español
 
-El comando `npm run ami:chat-es -- "hola"` responde preguntas frecuentes en español usando coincidencia local de intenciones y `data/dialogos-es.json`. Para conversar de forma interactiva ejecuta `npm run ami:chat-interactivo`. No usa internet, APIs ni dependencias adicionales. Para enseñar nuevas respuestas, edita el JSON y añade patrones y respuestas a una intención. Esta capa es un sistema local de diálogo por ejemplos, no un modelo generativo ni una comprensión semántica avanzada. El generador neuronal experimental se conserva por separado en `npm run ami:chat -- "hola"`.
+- `data/dialogos-es.json`: saludos y conversación inicial.
+- `data/conocimientos-es.json`: preguntas y respuestas locales sobre programación, Termux, GitHub, seguridad, IA y conceptos básicos.
+- `ami-nano/chat_es.py`: normalización de texto, coincidencia local de patrones y respuesta conservadora cuando no encuentra una coincidencia fiable.
+- `ami-nano/train.py` y `ami-nano/generate.py`: experimento neuronal independiente de caracteres.
 
-## ¿Qué arquitectura tiene?
+Para agregar conocimiento, añade un objeto con `intent`, `patterns` y `responses` a `data/conocimientos-es.json`. Usa respuestas revisadas, ejemplos originales o contenido cuya licencia permita su distribución. No agregues mensajes privados, contraseñas ni claves.
 
-Una red neuronal mínima: el carácter anterior se representa como índice de entrada y una matriz de pesos entrenables produce una distribución softmax del siguiente carácter. Los pesos empiezan aleatoriamente y se actualizan con descenso de gradiente usando pares de caracteres del corpus. Es un modelo de contexto de un carácter, pequeño y limitado; no es un Transformer ni entiende semántica.
+## Pruebas y límites
 
-- `data/corpus.txt`: ejemplos de entrenamiento editables.
-- `ami-nano/train.py`: entrenamiento y guardado atómico del checkpoint.
-- `ami-nano/generate.py`: inferencia local.
-- `tests-ami/test_ami_nano.py`: pruebas de entrenamiento, generación y errores.
-- `AMI_SEED`: semilla de entrenamiento (por defecto 7).
-- `AMI_EPOCHS`: épocas (por defecto 80; máximo 2000).
-- `AMI_MAX_NEW_TOKENS`: longitud máxima de salida (por defecto 180; máximo 500).
-- `AMI_TEMPERATURE`: diversidad de generación (por defecto 0.85).
+Ejecuta `npm run ami:test`. Las pruebas verifican la carga de la base, preguntas representativas, respuesta de reserva para consultas desconocidas y el esquema de datos. Estas pruebas no demuestran comprensión general ni que la calidad sea equivalente a un LLM.
 
-## Límites y seguridad
+La base de conocimiento responde con textos revisados; no es el modelo neuronal quien redacta esas respuestas. La red de caracteres se entrena desde cero, pero por su tamaño solo aprende patrones muy simples y puede generar texto incoherente. AMI no se autoactualiza ni modifica el bot anfitrión.
 
-La calidad depende directamente del corpus; un modelo tan pequeño producirá errores y texto poco coherente. No entrenes con mensajes privados ni secretos. Usa solo textos propios o con licencia compatible. El bot no modifica automáticamente el código ni se autoactualiza en producción.
+## Integración con bots
 
-## Siguientes fases
-
-1. Evaluar calidad con un conjunto de preguntas reservadas que no se incluyan en el entrenamiento.
-2. Ampliar el contexto y comparar métricas reproducibles.
-3. Añadir una interfaz estable del SDK para BaseBot sin cambiar los demás comandos.
-4. Considerar un motor C/C++ únicamente después de perfilar el rendimiento.
+El SDK de AMILCAR AI debe ejecutarse como dependencia local del bot. Para Termux, instala Python por separado con `pkg install python`. Integra la capa de chat solo después de comprobar los comandos existentes del bot; limita la longitud del mensaje, captura errores y no envíes mensajes privados a entrenamiento automáticamente.
