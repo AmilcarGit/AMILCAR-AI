@@ -14,8 +14,8 @@ El SDK funciona con Node.js 18 o superior y no necesita dependencias npm adicion
 const { AmilcarAI } = require("amilcar-ai");
 
 const ia = new AmilcarAI({
-  baseURL: process.env.AMILCAR_AI_URL || "http://127.0.0.1:8000",
-  timeout: 30000
+  mode: "local",
+  timeout: 120000
 });
 
 async function consultarIA(texto) {
@@ -44,9 +44,9 @@ installAmilcarAI(sock, { prefix: "!ia" });
 
 El ejemplo responde solo cuando el mensaje empieza con `!ia`, evita responder a mensajes enviados por el propio bot y permite limitar los chats mediante `allowedJids`. Ajusta el import si copias el archivo a otra carpeta. Baileys se instala por separado según la versión que utilice tu bot.
 
-### Importante: el SDK y el motor son dos piezas distintas
+### Importante: requisitos reales del modo local
 
-Instalar el paquete agrega el cliente Node.js, pero **no descarga ni ejecuta automáticamente el modelo neuronal**. Debes mantener la API de AMILCAR AI funcionando en el mismo servidor o indicar una dirección accesible mediante `AMILCAR_AI_URL`. No expongas la API directamente a Internet: para conexiones remotas añade HTTPS, autenticación, límites de frecuencia y controles de acceso.
+El SDK prioriza el modo local, sin URL ni servidor HTTP. Sin embargo, `npm install github:AmilcarGit/AMILCAR-AI` instala el código JavaScript; no instala Python/PyTorch ni incluye actualmente un checkpoint AMI entrenado. Por eso el modo local todavía requiere un entorno Python compatible, las dependencias del motor y un archivo de pesos indicado por `AMILCAR_AI_MODEL_PATH`. Ejecuta `npm run check:local` para comprobar estos requisitos. No se debe ejecutar entrenamiento pesado durante `npm install`. El modo API sigue disponible explícitamente con `mode: "api"` y `AMILCAR_AI_URL`, pero es opcional.
 
 ## Ejecutar el motor AMILCAR AI
 
@@ -85,7 +85,7 @@ En otra terminal, dentro del repositorio:
 
 ## Usar AMILCAR AI sin web ni API
 
-El SDK puede ejecutar el motor de Python como un proceso local persistente. Esto no necesita navegador, página web, servidor HTTP ni una API comercial. Sí necesita Python y las dependencias de este proyecto instaladas, además de un checkpoint entrenado.
+El SDK puede ejecutar el motor de Python como un proceso local persistente. Esto no necesita navegador, página web, servidor HTTP ni una API comercial. Sí necesita Python, PyTorch, las dependencias del proyecto y un checkpoint entrenado. El paquete GitHub aún no distribuye automáticamente ese checkpoint; por tanto, la instalación completamente automática descrita como objetivo todavía no está terminada.
 
 ### Preparar el motor local
 
