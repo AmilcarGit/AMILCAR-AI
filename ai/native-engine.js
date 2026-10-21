@@ -130,7 +130,7 @@ function addKnowledge(entry) {
   if (typeof entry.answer !== "string" || !entry.answer.trim()) {
     throw new TypeError("El conocimiento necesita una respuesta de texto no vacía.");
   }
-  const normalizedId = normalize(entry.id).replace(/\\s+/g, "_");
+  const normalizedId = normalize(entry.id).replace(/\s+/g, "_");
   const normalizedTerms = entry.terms.map((term) => term.trim());
   const existing = KNOWLEDGE.findIndex((item) => item.id === normalizedId);
   const item = { id: normalizedId, terms: normalizedTerms, answer: entry.answer.trim() };
