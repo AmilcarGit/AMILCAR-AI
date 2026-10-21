@@ -1,68 +1,98 @@
+<div align="center">
+
+<img src="https://files.catbox.moe/qbg4v1.png" alt="AMILCAR AI — logo oficial" width="220">
+
 # AMILCAR AI
 
+### Inteligencia artificial experimental, abierta y local
 
+**Un motor de IA diseñado para aprender, experimentar e integrarse con tus proyectos.**
 
-IA abierta y experimental de AmilcarGit, con una interfaz cyberpunk, una API local y AMI-Base, un modelo pequeño entrenable desde pesos aleatorios. Incluye un SDK oficial para integrar el motor con bots de WhatsApp hechos en Node.js.
+<p>
+  <a href="https://github.com/AmilcarGit/AMILCAR-AI"><img src="https://img.shields.io/badge/GitHub-AMILCAR--AI-181717?style=for-the-badge&logo=github" alt="Repositorio GitHub"></a>
+  <a href="https://github.com/AmilcarGit/AMILCAR-AI/blob/main/LICENSE"><img src="https://img.shields.io/badge/Licencia-MIT-blue?style=for-the-badge" alt="Licencia MIT"></a>
+  <a href="https://github.com/AmilcarGit/AMILCAR-AI/actions"><img src="https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="GitHub Actions"></a>
+  <a href="https://github.com/AmilcarGit/AMILCAR-AI/issues"><img src="https://img.shields.io/badge/Soporte-Abrir_issue-8957e5?style=for-the-badge&logo=github" alt="Reportar un problema"></a>
+</p>
 
-## Integrar en un bot de WhatsApp
+<p>
+  <a href="#-introducción">Introducción</a> ·
+  <a href="#-características">Características</a> ·
+  <a href="#-instalación-rápida">Instalación</a> ·
+  <a href="#-integración-con-bots-de-whatsapp">WhatsApp</a> ·
+  <a href="#-desarrollo-y-pruebas">Pruebas</a>
+</p>
 
-Instala el SDK directamente desde este repositorio:
+</div>
 
-    npm install github:AmilcarGit/AMILCAR-AI
+---
 
-El SDK funciona con Node.js 18 o superior y no necesita dependencias npm adicionales. Es compatible con CommonJS y puede importarse desde proyectos Node.js que usen `require`.
+## 👋 Introducción
+
+**AMILCAR AI** es un proyecto de inteligencia artificial de código abierto desarrollado por [AmilcarGit](https://github.com/AmilcarGit). Reúne un SDK para Node.js, un motor experimental en Python, una API HTTP opcional y herramientas para investigar generación de texto y modelos locales.
+
+La meta es que un desarrollador pueda incorporar AMILCAR AI a su propio proyecto sin tener que construir toda la capa de integración desde cero. Uno de los casos de uso principales es la integración con bots de WhatsApp: **cada bot conserva su propia sesión, configuración y datos**, mientras que la instalación de AMILCAR AI genera el texto que el bot puede enviar.
+
+> **Estado del proyecto:** experimental y en desarrollo activo. Las capacidades dependen del modo seleccionado y de los componentes instalados. El modelo AMI-Base entrenado desde cero es experimental; lee las limitaciones antes de usarlo en producción.
+
+## ✨ Características
+
+- **SDK para Node.js:** integra el motor desde proyectos JavaScript compatibles con CommonJS.
+- **Modos de ejecución:** `local`, `hybrid` y `api`, según el flujo que necesites.
+- **Integración con WhatsApp:** ejemplo de manejador para Baileys que permite responder solo al prefijo configurado.
+- **Generación local experimental:** el modo híbrido puede usar un modelo GGUF mediante `llama.cpp`, sin enviar las consultas a una API comercial.
+- **Conocimiento local:** recuperación de contenido y reglas de respuesta en español.
+- **API HTTP opcional:** backend FastAPI con endpoints de salud y chat.
+- **Interfaz web:** aplicación web incluida en el repositorio.
+- **Pruebas automatizadas:** pruebas de Node.js, Python y compilación web mediante GitHub Actions.
+
+## 🚀 Instalación rápida
+
+### Requisitos básicos
+
+- Node.js 18 o superior para el SDK.
+- Git y conexión a Internet para instalar desde GitHub.
+- Para funciones específicas: Python compatible, dependencias del backend o `llama.cpp`, según el modo elegido.
+
+Instala el SDK en la carpeta de tu proyecto:
+
+```bash
+npm install github:AmilcarGit/AMILCAR-AI
+```
+
+Para importar el SDK:
 
 ```js
 const { AmilcarAI } = require("amilcar-ai");
 
 const ia = new AmilcarAI({
-  mode: "local",
+  mode: "hybrid",
   timeout: 120000
 });
 
-async function consultarIA(texto) {
+async function responder(texto) {
   const resultado = await ia.chat(texto);
   return resultado.reply;
 }
 ```
 
-Métodos disponibles:
-- `await ia.chat("Hola")`: devuelve `{ reply, model, trained }`.
-- `await ia.generate("Hola")`: devuelve solo el texto de la respuesta.
-- `await ia.health()`: comprueba el estado del motor.
-- Opciones: `mode`, `python`, `timeout`, `maxMessageLength`, `baseURL`, `chatPath`, `healthPath`.
+Este ejemplo muestra cómo llamar al SDK; el resultado real depende del motor disponible y de su configuración.
 
-Los errores incluyen `code` y, cuando corresponde, `status` para poder gestionarlos sin detener el bot.
+## 🤖 Integración con bots de WhatsApp
 
-### Motor híbrido local (experimental)
+AMILCAR AI es el componente que genera la respuesta; **no necesita iniciar una sesión de WhatsApp propia**. El bot anfitrión mantiene su autenticación y decide qué mensajes procesar y dónde enviar la respuesta.
 
-El SDK incluye el modo `hybrid`, que usa respuestas revisadas y conocimiento local en español. No requiere API HTTP, PyTorch ni un checkpoint AMI-Base; sí requiere Python 3 y que se mantengan los archivos `ami-nano/` y `data/` incluidos en el paquete.
-
-```js
-const { AmilcarAI } = require("amilcar-ai");
-
-const ia = new AmilcarAI({ mode: "hybrid", timeout: 45000 });
-const resultado = await ia.chat("Explícame la fotosíntesis");
-console.log(resultado.reply);
+```text
+Mensaje entrante
+      ↓
+Bot de WhatsApp (su propia sesión)
+      ↓
+AMILCAR AI (genera el texto)
+      ↓
+El bot envía la respuesta
 ```
 
-Instala el SDK desde la rama oficial `main` con:
-
-    npm install github:AmilcarGit/AMILCAR-AI
-
-El modo híbrido es experimental: busca coincidencias en diálogos y temas locales, y aplica reglas para rechazar candidatos neuronales de baja calidad. No garantiza responder sobre cualquier tema y debe indicar cuando no encuentra información fiable. El generador neuronal es opcional y necesita un archivo de modelo compatible; sin ese archivo, el motor conserva las respuestas locales y usa el fallback honesto. Cada consulta ejecuta Python, así que la latencia puede ser mayor que la de un worker persistente.
-
-### Generación automática con un modelo GGUF local en Android/Termux
-
-El modo híbrido puede descargar automáticamente un modelo GGUF durante `npm install` y guardar una copia reutilizable en `~/.cache/amilcar-ai/models`. En Termux intenta instalar también `llama.cpp` con `pkg`. Al recibir una consulta, AMILCAR AI inicia `llama-server` localmente si está instalado y todavía no está activo. Las consultas permanecen en el dispositivo y no usan una API externa.
-
-El modelo Qwen2.5-0.5B Q2_K ocupa aproximadamente 415 MB; reserva espacio adicional para la memoria de ejecución. Es un modelo pequeño para pruebas, no una garantía de respuestas correctas ni de calidad comparable con modelos grandes. Si no hay conexión durante la instalación, el bot podrá instalarse igualmente, pero la generación con el modelo no estará disponible hasta completar la descarga.
-
-Para omitir la descarga automática, configura `AMILCAR_AI_AUTO_INSTALL_MODEL=0` antes de ejecutar `npm install`. En sistemas que no sean Termux, instala `llama.cpp` y asegúrate de que `llama-server` esté en PATH. El servidor usa únicamente `127.0.0.1:8081`; no lo expongas en una interfaz pública. Variables opcionales: `AMILCAR_AI_LLM_TIMEOUT` (segundos, por defecto 90) y `AMILCAR_AI_LLM_TOKENS` (32–400).
-
-### Ejemplo para Baileys
-
-Consulta `examples/baileys-handler.cjs`. En tu bot instala el SDK y copia el ejemplo a tu estructura; luego registra el manejador con tu socket:
+Hay un ejemplo de integración con Baileys en [`examples/baileys-handler.cjs`](examples/baileys-handler.cjs).
 
 ```js
 const { installAmilcarAI } = require("./examples/baileys-handler.cjs");
@@ -70,132 +100,195 @@ const { installAmilcarAI } = require("./examples/baileys-handler.cjs");
 installAmilcarAI(sock, { prefix: "!ia" });
 ```
 
-El ejemplo responde solo cuando el mensaje empieza con `!ia`, evita responder a mensajes enviados por el propio bot y permite limitar los chats mediante `allowedJids`. Ajusta el import si copias el archivo a otra carpeta. Baileys se instala por separado según la versión que utilice tu bot.
+El ejemplo requiere un socket de Baileys ya conectado. Está pensado como punto de partida: adapta el import a la ubicación del archivo y revisa la versión de Baileys que utiliza tu bot. No reemplaza el sistema de sesión, el almacenamiento ni la lógica de conexión del bot.
 
-### Importante: requisitos reales del modo local
+### Métodos del SDK
 
-El SDK prioriza el modo local, sin URL ni servidor HTTP. Sin embargo, `npm install github:AmilcarGit/AMILCAR-AI` instala el código JavaScript; no instala Python/PyTorch ni incluye actualmente un checkpoint AMI entrenado. Por eso el modo local todavía requiere un entorno Python compatible, las dependencias del motor y un archivo de pesos indicado por `AMILCAR_AI_MODEL_PATH`. Ejecuta `npm run check:local` para comprobar estos requisitos. No se debe ejecutar entrenamiento pesado durante `npm install`. El modo API sigue disponible explícitamente con `mode: "api"` y `AMILCAR_AI_URL`, pero es opcional.
+| Método | Descripción |
+| --- | --- |
+| `ia.chat("Hola")` | Devuelve un objeto con la respuesta y metadatos. |
+| `ia.generate("Hola")` | Devuelve únicamente el texto generado. |
+| `ia.health()` | Comprueba el estado del motor disponible. |
+| `ia.close()` | Cierra los recursos del cliente cuando corresponda. |
 
-## Ejecutar el motor AMILCAR AI
+Las llamadas a `chat`, `generate` y `health` son asíncronas. Maneja los errores con `try/catch` para evitar que una consulta fallida detenga el bot.
 
-### Requisitos
-Python 3.11 o 3.12, Node.js 18 o superior y npm. PyTorch debe ser compatible con tu sistema.
+## 🧠 Modos de funcionamiento
 
-### Instalación
-
-    git clone https://github.com/AmilcarGit/AMILCAR-AI.git
-    cd AMILCAR-AI
-    python -m venv .venv
-
-Activa el entorno:
-- Linux/macOS/Termux: `source .venv/bin/activate`
-- Windows PowerShell: `.venv\\Scripts\\Activate.ps1`
-
-Instala dependencias Python y entrena el modelo de demostración:
-
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-    python -m ai.training.train --steps 300
-
-Inicia la API en una terminal:
-
-    uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
-
-La API queda en `http://127.0.0.1:8000`; la documentación interactiva está en `http://127.0.0.1:8000/docs`. Si el bot se ejecuta en otro contenedor o servidor, `127.0.0.1` apuntará a ese entorno, no al servidor de IA: configura una dirección de red privada protegida y accesible desde el bot.
-
-### Interfaz web opcional
-
-En otra terminal, dentro del repositorio:
-
-    cd apps/web
-    npm install
-    npm run dev
-
-## Usar AMILCAR AI sin web ni API
-
-El SDK puede ejecutar el motor de Python como un proceso local persistente. Esto no necesita navegador, página web, servidor HTTP ni una API comercial. Sí necesita Python, PyTorch, las dependencias del proyecto y un checkpoint entrenado. El paquete GitHub aún no distribuye automáticamente ese checkpoint; por tanto, la instalación completamente automática descrita como objetivo todavía no está terminada.
-
-### Preparar el motor local
-
-Clona el repositorio y entra en él:
-
-    git clone https://github.com/AmilcarGit/AMILCAR-AI.git
-    cd AMILCAR-AI
-    python -m venv .venv
-    source .venv/bin/activate
-    pip install -r requirements.txt
-    python -m ai.training.train --steps 300
-
-Para entrenar más pasos sobre el checkpoint existente, usando el mismo vocabulario:
-
-    python -m ai.training.train --steps 1000 --resume
-
-El entrenamiento progresivo solo admite caracteres que ya estén en el vocabulario del checkpoint. Si el corpus necesita caracteres nuevos, crea una nueva versión del modelo sin `--resume` y evalúa antes de reemplazar la versión anterior.
-
-### Usar el motor desde Node.js
-
-Instala el SDK en el proyecto del bot:
-
-    npm install github:AmilcarGit/AMILCAR-AI
-
-Configura la ruta del checkpoint creado en el clon del repositorio. Ajusta la ruta a tu sistema operativo:
-
-    export AMILCAR_AI_MODE=local
-    export AMILCAR_AI_MODEL_PATH=/ruta/absoluta/AMILCAR-AI/artifacts/ami-base.pt
-    export AMILCAR_AI_PYTHON=/ruta/absoluta/AMILCAR-AI/.venv/bin/python
-
-Ejemplo JavaScript:
+### `hybrid` — conocimiento local y generación opcional
 
 ```js
 const { AmilcarAI } = require("amilcar-ai");
 
-const ia = new AmilcarAI({
-  mode: process.env.AMILCAR_AI_MODE || "local",
-  timeout: 120000
-});
-
-const respuesta = await ia.generate("Hola, ¿quién eres?");
-console.log(respuesta);
-
-// Cuando el bot se apague, cierra el proceso local:
-await ia.close();
+const ia = new AmilcarAI({ mode: "hybrid", timeout: 120000 });
+const resultado = await ia.chat("Explícame cómo funciona la gravedad");
+console.log(resultado.reply);
 ```
 
-El proceso local carga el checkpoint una vez y atiende varias solicitudes. En producción, cierra el cliente al apagar el bot. Si prefieres usar la API existente, omite `mode: "local"` o establece `AMILCAR_AI_MODE=api`.
+El modo híbrido busca primero información y respuestas locales. La generación mediante un modelo GGUF es opcional; si el modelo o el servidor no están disponibles, el sistema puede recurrir al comportamiento alternativo configurado. El modo es experimental y no garantiza una respuesta correcta para todas las preguntas.
 
-**Importante:** el paquete instalado desde GitHub contiene el código, pero no incluye automáticamente los pesos generados por tu entrenamiento porque los archivos `.pt` están excluidos de Git. `AMILCAR_AI_MODEL_PATH` apunta al checkpoint que generaste en tu clon local. No subas checkpoints grandes o de baja calidad sin evaluarlos; Git LFS o GitHub Releases son mejores opciones cuando crezcan.
+### `local` — motor Python experimental
 
-## API HTTP
-- `GET /health`: estado del servicio y disponibilidad del modelo.
-- `POST /api/chat`: genera una respuesta a partir de `{"message":"Hola AMILCAR AI"}`.
-- `GET /docs`: documentación de FastAPI.
+El modo local del motor AMI-Base requiere Python, las dependencias indicadas en `requirements.txt` y un checkpoint compatible. No des por hecho que esos pesos están incluidos al instalar el SDK desde GitHub.
 
-## Modelo y limitaciones
+Consulta [Preparar el motor local](#-ejecutar-el-motor-completo) y comprueba los requisitos antes de seleccionar este modo.
 
-AMI-Base es un Transformer pequeño de PyTorch que empieza con pesos aleatorios. El corpus incluido es solo una demostración técnica; no es un modelo avanzado ni un reemplazo de una IA comercial. Sus respuestas pueden ser incoherentes. Antes de entrenar con datos externos, revisa su procedencia, permisos y licencia. Los checkpoints se guardan localmente en `artifacts/ami-base.pt` y no se incluyen en Git por defecto. Para distribuir un checkpoint validado y pequeño se puede añadir expresamente; para archivos grandes, usa Git LFS o GitHub Releases. No confundas un checkpoint experimental con un modelo conversacional competente.
+### `api` — backend HTTP opcional
 
-## Pruebas
+El modo API utiliza una instancia del backend configurada por el usuario. No es obligatorio para el SDK ni para el modo híbrido local.
+
+## 📲 Modelo GGUF local en Android / Termux
+
+El paquete incluye un instalador de preparación que intenta descargar un modelo GGUF durante `npm install` y reutilizarlo desde:
+
+```text
+~/.cache/amilcar-ai/models/
+```
+
+En Termux, el instalador también intenta instalar `llama.cpp` mediante `pkg`. El SDK puede intentar iniciar `llama-server` en `127.0.0.1:8081` al necesitar la generación, si el modelo y el ejecutable están disponibles.
+
+**Ten en cuenta:**
+
+- La descarga requiere conexión a Internet y varios cientos de megabytes libres.
+- Si la descarga falla, la instalación del paquete intenta continuar; eso no significa que la generación GGUF esté lista.
+- La instalación automática del motor puede variar según la plataforma. En sistemas que no sean Termux, instala `llama.cpp` de forma compatible y asegúrate de que `llama-server` esté disponible en el `PATH`.
+- Para omitir la descarga durante la instalación, define `AMILCAR_AI_AUTO_INSTALL_MODEL=0`.
+- Mantén el servidor enlazado a `127.0.0.1`; no lo expongas directamente a Internet.
+- El modelo pequeño sirve para experimentar y puede producir respuestas incorrectas, repetitivas o poco profundas.
+
+## 🛠️ Ejecutar el motor completo
+
+Para trabajar en el repositorio, clónalo:
+
+```bash
+git clone https://github.com/AmilcarGit/AMILCAR-AI.git
+cd AMILCAR-AI
+```
+
+### Backend Python
+
+Se recomienda Python 3.11 o 3.12, con una versión de PyTorch compatible con el dispositivo:
+
+```bash
+python -m venv .venv
+```
+
+Activa el entorno:
+
+- Linux, macOS o Termux: `source .venv/bin/activate`
+- Windows PowerShell: `.venv\Scripts\Activate.ps1`
+
+Instala dependencias:
+
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Para entrenar el modelo de demostración:
+
+```bash
+python -m ai.training.train --steps 300
+```
+
+Para iniciar la API local:
+
+```bash
+uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
+```
+
+- API local: `http://127.0.0.1:8000`
+- Documentación interactiva: `http://127.0.0.1:8000/docs`
+
+El entrenamiento es una tarea separada y no debe confundirse con instalar el SDK en un bot.
+
+### Interfaz web
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+## ⚙️ Configuración
+
+| Variable | Propósito |
+| --- | --- |
+| `AMILCAR_AI_MODE` | Selecciona el modo de ejecución utilizado por la integración. |
+| `AMILCAR_AI_MODEL_PATH` | Ruta al checkpoint de AMI-Base para el motor Python. |
+| `AMILCAR_AI_PYTHON` | Ejecutable de Python que utilizará el motor local. |
+| `AMILCAR_AI_LLM_MODEL` | Ruta opcional a un modelo GGUF. |
+| `AMILCAR_AI_LLM_URL` | Endpoint local compatible con el formato de chat; por defecto, `http://127.0.0.1:8081/v1/chat/completions`. |
+| `AMILCAR_AI_LLM_TIMEOUT` | Tiempo máximo de espera para la generación local, en segundos. |
+| `AMILCAR_AI_LLM_TOKENS` | Límite de tokens de respuesta, dentro del rango admitido por el motor. |
+| `AMILCAR_AI_AUTO_INSTALL_MODEL` | Usa `0` para desactivar la descarga automática durante la instalación. |
+
+La disponibilidad y el efecto de cada variable dependen del modo y de la versión instalada. No publiques claves ni información privada en el repositorio.
+
+## 🧪 Desarrollo y pruebas
 
 SDK Node.js:
 
-    npm test
+```bash
+npm test
+```
 
 Backend Python:
 
-    pytest
+```bash
+pytest
+```
 
-Interfaz:
+Compilación de la interfaz:
 
-    cd apps/web
-    npm install
-    npm run build
+```bash
+cd apps/web
+npm install
+npm run build
+```
 
-GitHub Actions comprueba automáticamente SDK, backend e interfaz.
+Los flujos de GitHub Actions ejecutan comprobaciones automatizadas. Consulta la pestaña [Actions](https://github.com/AmilcarGit/AMILCAR-AI/actions) para ver el resultado de cada ejecución.
 
-## Seguridad
+## 🗺️ Hoja de ruta
 
-La API escucha en `127.0.0.1` por defecto. No la expongas públicamente sin HTTPS, autenticación, límites de frecuencia y revisión de configuración. No guardes claves, mensajes privados ni datos sensibles en el repositorio o corpus. El modelo no ejecuta comandos del sistema.
+- [x] SDK de Node.js para integrar AMILCAR AI.
+- [x] Modo híbrido experimental con conocimiento local.
+- [x] Ejemplo de integración con Baileys.
+- [x] Preparación inicial para descargar un modelo GGUF local.
+- [ ] Validar la instalación automática en diferentes versiones de Termux y Linux.
+- [ ] Mejorar la calidad de generación y ampliar las evaluaciones en español.
+- [ ] Documentar con pruebas los escenarios de instalación, recuperación de errores y uso prolongado.
 
-## Licencia y contribuciones
+Las casillas reflejan el estado documental del proyecto y deben actualizarse a medida que se validen las funciones.
 
-El código está bajo MIT. Esta licencia no otorga derechos sobre datos externos que incorpores. Consulta `CONTRIBUTING.md` y `SECURITY.md` antes de contribuir o reportar una vulnerabilidad.
+## 🔐 Seguridad y privacidad
+
+- Cada bot debe gestionar su propia sesión de WhatsApp y sus permisos.
+- No compartas archivos de sesión, credenciales, tokens ni mensajes privados.
+- Mantén las APIs y los servidores de inferencia en interfaces privadas; para acceso remoto, añade autenticación y transporte seguro.
+- Comprueba el origen, los permisos y la licencia de los datos usados para entrenar.
+- Evalúa las respuestas del modelo antes de utilizarlas en flujos importantes.
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Puedes abrir un issue para reportar errores, proponer una mejora o enviar un pull request con cambios concretos y pruebas cuando sea posible.
+
+- [Ver issues abiertos](https://github.com/AmilcarGit/AMILCAR-AI/issues)
+- [Proponer una mejora](https://github.com/AmilcarGit/AMILCAR-AI/issues/new)
+- [Explorar el código](https://github.com/AmilcarGit/AMILCAR-AI/tree/main)
+
+## 📄 Licencia
+
+El código de este proyecto se distribuye bajo la licencia [MIT](LICENSE). La licencia del código no sustituye los términos de licencias de modelos o datos externos que decidas incorporar.
+
+---
+
+<div align="center">
+
+**Creado por [AmilcarGit](https://github.com/AmilcarGit)**
+
+*Construyendo AMILCAR AI paso a paso: abierta, experimental y enfocada en la integración local.*
+
+<a href="https://github.com/AmilcarGit/AMILCAR-AI">⭐ Explorar el repositorio</a>
+
+</div>
