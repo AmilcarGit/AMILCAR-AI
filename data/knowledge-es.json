@@ -1,0 +1,122 @@
+[
+  {
+    "id": "inteligencia_artificial",
+    "terms": [
+      "inteligencia artificial",
+      "que es la ia",
+      "que es inteligencia artificial",
+      "como funciona la ia"
+    ],
+    "answer": "La inteligencia artificial es un área de la informática que crea sistemas capaces de realizar tareas como reconocer patrones, procesar lenguaje y ayudar a resolver problemas. Algunos sistemas siguen reglas y otros aprenden patrones a partir de datos. Sus resultados deben verificarse porque pueden equivocarse."
+  },
+  {
+    "id": "amilcar_ai",
+    "terms": [
+      "amilcar ai",
+      "amilcar-ai",
+      "quien eres",
+      "que eres",
+      "tu nombre"
+    ],
+    "answer": "Soy AMILCAR AI, un asistente experimental que funciona localmente con reglas y conocimientos incluidos en el proyecto. No uso una API externa en el modo nativo. Mis capacidades son limitadas y no debo fingir que conozco algo cuando no tengo información suficiente."
+  },
+  {
+    "id": "programacion",
+    "terms": [
+      "programacion",
+      "programar",
+      "javascript",
+      "node.js",
+      "nodejs",
+      "codigo"
+    ],
+    "answer": "Para programar, divide el problema en pasos pequeños, implementa una parte, ejecútala y prueba los casos normales y los errores. Si compartes el lenguaje, el código y el error exacto, puedo ayudarte a analizarlo con las capacidades de mi motor local."
+  },
+  {
+    "id": "whatsapp_bots",
+    "terms": [
+      "bot de whatsapp",
+      "whatsapp bot",
+      "baileys",
+      "bot whatsapp"
+    ],
+    "answer": "Un bot de WhatsApp recibe eventos de mensajes, aplica sus reglas y decide qué respuesta enviar. Conviene separar la conexión y la sesión de WhatsApp del motor que genera texto. Así cada instalación conserva sus credenciales y AMILCAR AI se ocupa solo de preparar la respuesta."
+  },
+  {
+    "id": "aprendizaje",
+    "terms": [
+      "como aprender",
+      "aprender",
+      "estudiar",
+      "aprendizaje"
+    ],
+    "answer": "Una técnica útil para aprender es estudiar una idea, explicarla con tus propias palabras, practicar con un ejemplo y comprobar qué entendiste. Revisa los errores y vuelve a intentarlo después de un intervalo; la práctica activa suele ser más útil que solo releer."
+  },
+  {
+    "id": "privacidad",
+    "terms": [
+      "privacidad",
+      "datos personales",
+      "seguridad",
+      "mis datos"
+    ],
+    "answer": "Para proteger tus datos, evita publicar contraseñas, tokens, archivos de sesión o información privada. En el modo nativo de AMILCAR AI, el texto se procesa localmente y no se envía a un proveedor de IA; el bot anfitrión y otras dependencias deben revisarse por separado."
+  },
+  {
+    "id": "fotosintesis",
+    "terms": [
+      "fotosintesis",
+      "plantas y luz",
+      "como se alimentan las plantas"
+    ],
+    "answer": "La fotosíntesis permite que las plantas conviertan energía de la luz en energía química. Usan agua y dióxido de carbono para producir azúcares y liberan oxígeno. En las plantas ocurre principalmente en los cloroplastos de sus células."
+  },
+  {
+    "id": "gravedad",
+    "terms": [
+      "gravedad",
+      "que es la gravedad",
+      "fuerza gravitatoria"
+    ],
+    "answer": "La gravedad es la interacción por la que los cuerpos con masa se atraen. En la Tierra nos mantiene sobre el suelo y hace que los objetos caigan cuando no hay otra fuerza que los sostenga. También mantiene a los planetas en órbita alrededor del Sol."
+  },
+  {
+    "id": "sistema_solar",
+    "terms": [
+      "sistema solar",
+      "que es el sistema solar",
+      "planetas del sistema solar",
+      "que planetas hay en el sistema solar"
+    ],
+    "answer": "El sistema solar está formado por el Sol y los cuerpos que permanecen ligados a su gravedad, incluidos ocho planetas, sus lunas, planetas enanos, asteroides y cometas. Los planetas, desde el más cercano al Sol, son Mercurio, Venus, Tierra, Marte, Júpiter, Saturno, Urano y Neptuno."
+  },
+  {
+    "id": "ciclo_del_agua",
+    "terms": [
+      "ciclo del agua",
+      "como funciona el ciclo del agua",
+      "que es el ciclo hidrologico"
+    ],
+    "answer": "El ciclo del agua es el movimiento continuo del agua entre la superficie terrestre y la atmósfera. Incluye evaporación, condensación en nubes, precipitación y procesos como la infiltración y la escorrentía. La energía del Sol y la gravedad impulsan gran parte de este ciclo."
+  },
+  {
+    "id": "internet",
+    "terms": [
+      "que es internet",
+      "como funciona internet",
+      "internet",
+      "red mundial"
+    ],
+    "answer": "Internet es una red mundial de redes que intercambian datos mediante protocolos comunes, como TCP/IP. Los dispositivos se comunican usando direcciones y servicios; por ejemplo, el DNS ayuda a encontrar la dirección asociada a un nombre de dominio y HTTPS protege la comunicación web mediante cifrado."
+  },
+  {
+    "id": "matematicas",
+    "terms": [
+      "que son las matematicas",
+      "matematicas",
+      "matematica",
+      "para que sirven las matematicas"
+    ],
+    "answer": "Las matemáticas estudian cantidades, estructuras, patrones y cambios mediante razonamiento lógico. Se utilizan para medir, modelar situaciones, analizar datos y resolver problemas. Para aprender un tema, conviene comprender la idea, resolver ejemplos sencillos y comprobar cada paso."
+  }
+]
