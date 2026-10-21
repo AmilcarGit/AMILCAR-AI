@@ -27,10 +27,33 @@ async function consultarIA(texto) {
 Métodos disponibles:
 - `await ia.chat("Hola")`: devuelve `{ reply, model, trained }`.
 - `await ia.generate("Hola")`: devuelve solo el texto de la respuesta.
-- `await ia.health()`: comprueba el estado de la API.
-- Opciones: `baseURL`, `timeout`, `maxMessageLength`, `chatPath`, `healthPath`.
+- `await ia.health()`: comprueba el estado del motor.
+- Opciones: `mode`, `python`, `timeout`, `maxMessageLength`, `baseURL`, `chatPath`, `healthPath`.
 
 Los errores incluyen `code` y, cuando corresponde, `status` para poder gestionarlos sin detener el bot.
+
+### Motor híbrido local (experimental)
+
+La rama de desarrollo `feat/ami-nano-hybrid-sdk` añade el modo `hybrid`, que usa las respuestas revisadas y el conocimiento local de `ami-nano/hybrid.py`. No requiere una API HTTP, PyTorch ni un checkpoint AMI-Base; sí requiere Python 3 y que el paquete incluya los archivos `ami-nano/` y `data/`.
+
+```js
+const { AmilcarAI } = require("amilcar-ai");
+
+const ia = new AmilcarAI({
+  mode: "hybrid",
+  timeout: 45000,
+  maxMessageLength: 2000
+});
+
+const resultado = await ia.chat("Explícame la fotosíntesis");
+console.log(resultado.reply);
+```
+
+Para instalar esta versión de desarrollo desde GitHub:
+
+    npm install github:AmilcarGit/AMILCAR-AI#feat/ami-nano-hybrid-sdk
+
+El modo híbrido es experimental: responde con diálogos y temas locales que coincidan, y usa reglas para rechazar candidatos neuronales de baja calidad. No garantiza saber responder cualquier tema; si no encuentra información fiable, debe indicarlo. Cada consulta ejecuta el script Python, por lo que la latencia puede ser mayor que la de un worker persistente.
 
 ### Ejemplo para Baileys
 
