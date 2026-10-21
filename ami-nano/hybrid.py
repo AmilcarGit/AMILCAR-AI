@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Chat híbrido experimental: conocimiento local, candidato neuronal y reglas verificables."""
+"""AMI Nano Evolutiva 2.1: recuperación local y composición controlada en español."""
 import os
 import re
 import subprocess
@@ -14,14 +14,50 @@ STOPWORDS = {
     "a", "al", "algo", "como", "con", "de", "del", "desde", "el", "ella",
     "en", "es", "esta", "este", "la", "las", "lo", "los", "me", "mi",
     "para", "por", "que", "se", "si", "sin", "soy", "su", "te", "tengo",
-    "tu", "un", "una", "unas", "uno", "unos", "y", "yo",
+    "tu", "un", "una", "unas", "uno", "unos", "y", "yo", "qué", "cuál",
+    "puedes", "explica", "explicame", "dime", "habla", "sobre", "favor",
 }
-VOWELS = set("aeiouáéíóúü")
+KNOWLEDGE = {
+    "fotosintesis": {
+        "terms": {"fotosintesis", "plantas", "luz", "solar", "agua", "dioxido", "carbono", "glucosa", "oxigeno"},
+        "answer": (
+            "La fotosíntesis es el proceso por el que las plantas, las algas y algunas bacterias "
+            "transforman la energía de la luz en energía química. En las plantas ocurre principalmente "
+            "en los cloroplastos: usan agua y dióxido de carbono para producir azúcares y liberan oxígeno. "
+            "Por ejemplo, una planta recibe luz por sus hojas y utiliza esa energía para fabricar parte "
+            "del alimento que necesita para crecer."
+        ),
+        "intent": "ciencia_fotosintesis",
+    },
+    "aprendizaje": {
+        "terms": {"aprender", "aprendizaje", "conocimiento", "practicar", "preguntas", "errores", "experiencia"},
+        "answer": (
+            "Aprender cosas nuevas ayuda a ampliar conocimientos, descubrir otras perspectivas y resolver "
+            "problemas. Una forma práctica de aprender es estudiar una idea, explicarla con tus propias "
+            "palabras, probarla con un ejemplo y comprobar qué entendiste. Equivocarse también sirve si "
+            "revisas el error y corriges lo que haga falta."
+        ),
+        "intent": "aprendizaje",
+    },
+    "inteligencia_artificial": {
+        "terms": {"inteligencia", "artificial", "ia", "modelo", "datos", "automatizar", "privacidad", "errores"},
+        "answer": (
+            "La inteligencia artificial es un conjunto de técnicas que permite a un sistema realizar tareas "
+            "como reconocer patrones, procesar lenguaje o generar contenido. Puede ayudar a estudiar y "
+            "automatizar trabajos, pero sus resultados deben verificarse porque también puede equivocarse. "
+            "Conviene proteger los datos personales y no confundir una respuesta convincente con una respuesta verdadera."
+        ),
+        "intent": "inteligencia_artificial",
+    },
+}
+
+def tokens(text):
+    return set(re.findall(r"[a-záéíóúüñ0-9]+", normalize(text))) - STOPWORDS
 
 
 def match_knowledge(message, dialogs):
     query = normalize(message)
-    query_words = set(query.split())
+    query_words = tokens(message)
     best = None
     best_pattern = ""
     best_score = 0.0
@@ -30,27 +66,50 @@ def match_knowledge(message, dialogs):
             candidate = normalize(pattern)
             if not candidate:
                 continue
+            pattern_words = tokens(pattern)
             if query == candidate:
                 score = 1.0
+            elif not pattern_words or not query_words:
+                score = 0.0
             else:
-                words = set(candidate.split())
-                score = len(query_words & words) / max(1, len(query_words | words))
+                precision = len(query_words & pattern_words) / len(query_words)
+                recall = len(query_words & pattern_words) / len(pattern_words)
+                score = 2 * precision * recall / max(precision + recall, 1e-9)
                 if candidate in query or query in candidate:
-                    score = max(score, 0.82)
+                    score = max(score, 0.88)
             if score > best_score:
                 best, best_pattern, best_score = item, pattern, score
-    if best is not None and best_score >= 0.45:
+    if best is not None and best_score >= 0.68:
         return {"item": best, "pattern": best_pattern, "score": best_score}
+    return None
+
+
+def retrieve_local_knowledge(message):
+    query = tokens(message)
+    if not query:
+        return None
+    best = None
+    best_score = 0.0
+    for key, item in KNOWLEDGE.items():
+        terms = item["terms"]
+        overlap = query & terms
+        score = len(overlap) / max(1, len(query))
+        if key in normalize(message):
+            score = max(score, 1.0)
+        if score > best_score:
+            best, best_score = item, score
+    if best is not None and best_score >= 0.25:
+        return {"item": best, "score": best_score}
     return None
 
 
 def evaluate_candidate(question, candidate):
     text = candidate.strip()
     words = re.findall(r"[a-záéíóúüñ]+", text.lower())
-    meaningful = set(normalize(question).split()) - STOPWORDS
+    meaningful = tokens(question)
     candidate_words = set(words)
     overlap = meaningful & candidate_words
-    vowel_count = sum(char.lower() in VOWELS for char in text)
+    vowel_count = sum(char.lower() in "aeiouáéíóúü" for char in text)
     letters = sum(char.isalpha() for char in text)
     repeated_run = re.search(r"(.)\1{4,}", text.lower()) is not None
     checks = {
@@ -77,12 +136,8 @@ def generate_candidate(message, timeout=8):
     try:
         result = subprocess.run(
             [sys.executable, str(GENERATOR), prompt],
-            cwd=ROOT,
-            env=env,
-            text=True,
-            capture_output=True,
-            timeout=timeout,
-            check=False,
+            cwd=ROOT, env=env, text=True, capture_output=True,
+            timeout=timeout, check=False,
         )
     except (OSError, subprocess.TimeoutExpired):
         return None
@@ -108,16 +163,14 @@ def respond(message, dialogs=None, candidate=None):
         item = match["item"]
         answers = item.get("responses", [])
         if answers:
-            example = match["pattern"]
             answer = answers[0]
             return {
                 "text": (
                     f"Respuesta: {answer}\n\n"
-                    f"Explicación: encontré una coincidencia en el conocimiento local "
-                    f"para el tema «{item.get('intent', 'general')}». La respuesta procede "
-                    f"de data/dialogos-es.json; esta coincidencia no significa que la red "
-                    f"neuronal haya aprendido ese contenido.\n\n"
-                    f"Ejemplo relacionado: «{example}»."
+                    f"Explicación: recuperé una respuesta revisada de la base local "
+                    f"para el tema «{item.get('intent', 'general')}». Esto es recuperación "
+                    "de conocimiento, no una prueba de que la red neuronal haya aprendido ese contenido.\n\n"
+                    f"Ejemplo relacionado: «{match['pattern']}»."
                 ),
                 "source": "local_knowledge",
                 "quality": {
@@ -126,6 +179,21 @@ def respond(message, dialogs=None, candidate=None):
                     "intent": item.get("intent", "general"),
                 },
             }
+
+    retrieved = retrieve_local_knowledge(message)
+    if retrieved:
+        item = retrieved["item"]
+        return {
+            "text": (
+                f"Respuesta: {item['answer']}\n\n"
+                f"Explicación: construí esta respuesta usando conocimiento local revisado "
+                f"del tema «{item['intent']}». La coincidencia léxica fue "
+                f"{round(retrieved['score'] * 100)}%; no equivale a una verificación automática de todos los hechos.\n\n"
+                "Ejemplo relacionado: puedo explicar el concepto paso a paso o responder una pregunta más concreta."
+            ),
+            "source": "local_composition",
+            "quality": {"accepted": True, "knowledge_score": round(retrieved["score"], 3), "intent": item["intent"]},
+        }
 
     if candidate is None:
         candidate = generate_candidate(message)
@@ -136,9 +204,8 @@ def respond(message, dialogs=None, candidate=None):
                 "text": (
                     "Propuesta experimental del modelo neuronal (no verificada):\n"
                     f"{candidate}\n\n"
-                    "Explicación: el texto superó las reglas básicas de longitud, variedad, "
-                    "vocales, repetición y relación léxica con la pregunta. Estas reglas no "
-                    "garantizan que sea verdadero ni que tenga sentido."
+                    "Explicación: el texto superó reglas básicas de forma y coincidencia léxica. "
+                    "Estas comprobaciones no garantizan verdad, coherencia ni comprensión semántica."
                 ),
                 "source": "neural_candidate",
                 "quality": quality,
@@ -150,18 +217,14 @@ def respond(message, dialogs=None, candidate=None):
         quality = evaluate_candidate(message, candidate)
         reason = "El candidato neuronal no superó todas las reglas de calidad."
     else:
-        reason = (
-            "No pude generar un candidato neuronal; comprueba que exista el modelo "
-            "entrenado con «npm run ami:train»."
-        )
+        reason = "No pude generar un candidato neuronal; comprueba el entrenamiento con «npm run ami:train»."
     return {
         "text": (
             "Todavía no tengo una respuesta fiable para esa pregunta.\n\n"
-            f"Explicación: {reason} La red actual aprende transiciones entre caracteres, "
-            "no el significado de las preguntas, así que prefiero no inventar una respuesta.\n\n"
-            "Ejemplo para ampliar el conocimiento: añade a data/dialogos-es.json una "
-            "intención con varias formas de preguntar y una respuesta revisada. Después "
-            "ejecuta «npm run ami:test» para comprobar los casos."
+            f"Explicación: {reason} La red neuronal actual aprende transiciones entre caracteres; "
+            "no comprende por sí sola el significado del lenguaje, así que prefiero no inventar.\n\n"
+            "Ejemplo para ampliar el conocimiento: añade a data/dialogos-es.json una intención con varias "
+            "formas de preguntar y una respuesta revisada. Después ejecuta «npm run ami:test»."
         ),
         "source": "safe_fallback",
         "quality": quality,
@@ -178,7 +241,7 @@ def main():
     if message:
         print(respond(message, dialogs)["text"])
         return 0
-    print("AMILCAR AI — chat híbrido local. Escribe 'salir' para terminar.")
+    print("AMI Nano Evolutiva 2.1 — chat híbrido local. Escribe 'salir' para terminar.")
     try:
         while True:
             message = input("Tú: ").strip()
@@ -187,7 +250,7 @@ def main():
                 break
             result = respond(message, dialogs)
             print("AMI: " + result["text"])
-            print("[control de calidad: " + result["source"] + "]")
+            print("[origen: " + result["source"] + "]")
     except (EOFError, KeyboardInterrupt):
         print("\nAMI: ¡Hasta luego!")
     return 0
