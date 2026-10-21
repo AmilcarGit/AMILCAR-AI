@@ -32,7 +32,8 @@ function scoreEntry(query, entry) {
     if (query === candidate) best = Math.max(best, 1);
     else if (query.includes(candidate)) best = Math.max(best, Math.min(0.96, candidate.split(" ").length / Math.max(1, query.split(" ").length) + 0.35));
     else {
-      const words = candidate.split(" ").filter((word) => word.length > 2);
+      const stopWords = new Set(["que", "como", "es", "la", "el", "los", "las", "un", "una", "unos", "unas", "de", "del", "y", "o", "en", "por", "para", "con", "se", "su", "sus", "a", "al", "ia"]);
+      const words = candidate.split(" ").filter((word) => word.length > 2 && !stopWords.has(word));
       if (!words.length) continue;
       const queryWords = new Set(query.split(" "));
       const overlap = words.filter((word) => queryWords.has(word)).length;
