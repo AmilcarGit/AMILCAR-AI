@@ -35,6 +35,38 @@ La meta es que un desarrollador pueda incorporar AMILCAR AI a su propio proyecto
 
 > **Estado del proyecto:** experimental y en desarrollo activo. Las capacidades dependen del modo seleccionado y de los componentes instalados. El modelo AMI-Base entrenado desde cero es experimental; lee las limitaciones antes de usarlo en producción.
 
+## 🗂️ Estructura del proyecto
+
+Esta es la estructura funcional principal del repositorio y la organización objetivo para continuar el desarrollo. Separamos los motores, los datos, las integraciones y las pruebas para poder avanzar sin mezclar responsabilidades.
+
+```text
+AMILCAR-AI/
+├── ai/
+│   ├── native-engine.js       # Motor nativo ligero en JavaScript
+│   └── training/              # Entrenamiento experimental en Python
+├── apps/
+│   ├── api/                   # Backend HTTP opcional
+│   └── web/                   # Interfaz web
+├── data/
+│   └── knowledge-es.json      # Base de conocimientos editable en español
+├── examples/
+│   └── baileys-handler.cjs    # Ejemplo de integración con Baileys
+├── scripts/
+│   ├── check-local.js         # Comprobaciones del modo local
+│   └── install-model.js       # Instalación opcional del modelo GGUF
+├── tests-node/
+│   └── native.test.cjs        # Pruebas del motor nativo
+├── ami-nano/                  # Experimentos locales de texto/modelo
+├── native.js                 # SDK NativeAmilcarAI
+├── index.js                  # SDK principal
+├── package.json
+├── requirements.txt          # Dependencias Python del backend/entrenamiento
+├── README.md
+└── LICENSE
+```
+
+Los componentes opcionales (GGUF, API y Python) se mantienen separados: el motor `native` no necesita Internet, claves, dependencias externas ni descargar modelos. La lista muestra las rutas principales conocidas del proyecto, no implica que cada carpeta opcional sea necesaria para usar el modo nativo.
+
 ## 💫 ✨ Características ✨ 💫
 
 - **SDK para Node.js:** integra el motor desde proyectos JavaScript compatibles con CommonJS.
@@ -132,6 +164,20 @@ El modo híbrido busca primero información y respuestas locales. La generación
 El modo local del motor AMI-Base requiere Python, las dependencias indicadas en `requirements.txt` y un checkpoint compatible. No des por hecho que esos pesos están incluidos al instalar el SDK desde GitHub.
 
 Consulta [Preparar el motor local](#-ejecutar-el-motor-completo) y comprueba los requisitos antes de seleccionar este modo.
+
+#### Editar los conocimientos en español
+
+Los temas nativos están en `data/knowledge-es.json`, separados del código del motor. Cada entrada contiene un identificador, frases que pueden activar la respuesta y una respuesta revisada:
+
+```json
+{
+  "id": "tema_nuevo",
+  "terms": ["qué es mi tema", "explícame mi tema"],
+  "answer": "Una explicación breve y comprobable en español."
+}
+```
+
+Añade la entrada dentro del arreglo JSON, usa identificadores únicos y prueba varias formas reales de preguntar. El motor normaliza mayúsculas y tildes, pero sigue siendo un sistema de coincidencias: no aprende automáticamente de cada conversación ni garantiza responder cualquier pregunta.
 
 ### `native` — motor ligero propio, sin APIs ni descargas de modelos
 
