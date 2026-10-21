@@ -1,5 +1,9 @@
 "use strict";
 
+const path = require("path");
+const { spawn } = require("child_process");
+const readline = require("readline");
+
 class AmilcarAIError extends Error {
   constructor(message, options = {}) {
     super(message);
@@ -13,21 +17,35 @@ class AmilcarAIError extends Error {
 
 class AmilcarAI {
   constructor(options = {}) {
-    const baseURL = options.baseURL || process.env.AMILCAR_AI_URL || "http://127.0.0.1:8000";
-    let parsed;
-    try { parsed = new URL(baseURL); }
-    catch { throw new TypeError("baseURL debe ser una URL HTTP o HTTPS válida."); }
-    if (!["http:", "https:"].includes(parsed.protocol)) throw new TypeError("baseURL solo admite HTTP o HTTPS.");
-    this.baseURL = parsed.toString().replace(/\/$/, "");
-    this.chatPath = normalizePath(options.chatPath || "/api/chat");
-    this.healthPath = normalizePath(options.healthPath || "/health");
+    this.mode = options.mode || "api";
+    if (!["api", "local"].includes(this.mode)) throw new TypeError("mode debe ser 'api' o 'local'.");
     this.timeout = positiveInteger(options.timeout ?? 30000, "timeout");
     this.maxMessageLength = positiveInteger(options.maxMessageLength ?? 2000, "maxMessageLength");
-    this.fetch = options.fetch || globalThis.fetch;
-    if (typeof this.fetch !== "function") throw new Error("AMILCAR AI necesita Node.js 18 o superior, con fetch disponible.");
+    this.python = options.python || process.env.AMILCAR_AI_PYTHON || "python";
+    this._worker = null;
+    this._workerReady = null;
+    this._pending = new Map();
+    this._nextId = 1;
+
+    if (this.mode === "api") {
+      const baseURL = options.baseURL || process.env.AMILCAR_AI_URL || "http://127.0.0.1:8000";
+      let parsed;
+      try { parsed = new URL(baseURL); }
+      catch { throw new TypeError("baseURL debe ser una URL HTTP o HTTPS válida."); }
+      if (!["http:", "https:"].includes(parsed.protocol)) throw new TypeError("baseURL solo admite HTTP o HTTPS.");
+      this.baseURL = parsed.toString().replace(/\/$/, "");
+      this.chatPath = normalizePath(options.chatPath || "/api/chat");
+      this.healthPath = normalizePath(options.healthPath || "/health");
+      this.fetch = options.fetch || globalThis.fetch;
+      if (typeof this.fetch !== "function") throw new Error("AMILCAR AI necesita Node.js 18 o superior, con fetch disponible.");
+    }
   }
 
   async health(options = {}) {
+    if (this.mode === "local") {
+      await this._ensureLocal();
+      return this._sendLocal({ action: "health" }, options.signal);
+    }
     return this._request(this.healthPath, { method: "GET" }, options.signal);
   }
 
@@ -37,24 +55,136 @@ class AmilcarAI {
     if (text.length > this.maxMessageLength) {
       throw new AmilcarAIError("El mensaje supera el máximo de " + this.maxMessageLength + " caracteres.", { code: "MESSAGE_TOO_LONG" });
     }
+
+    if (this.mode === "local") {
+      await this._ensureLocal();
+      const result = await this._sendLocal({ action: "chat", message: text.trim() }, options.signal);
+      if (result.error) throw new AmilcarAIError(result.error, { code: result.code || "LOCAL_INFERENCE_ERROR" });
+      return { reply: result.reply, model: result.model || "AMI-Base", trained: Boolean(result.trained) };
+    }
+
     const result = await this._request(this.chatPath, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: JSON.stringify({ message: text.trim() })
     }, options.signal);
     if (typeof result.reply !== "string") throw new AmilcarAIError("La API respondió sin un campo 'reply' válido.", { code: "INVALID_RESPONSE" });
-    return {
-      reply: result.reply,
-      model: typeof result.model === "string" ? result.model : "AMILCAR AI",
-      trained: Boolean(result.trained)
-    };
+    return { reply: result.reply, model: typeof result.model === "string" ? result.model : "AMILCAR AI", trained: Boolean(result.trained) };
   }
 
   async generate(message, options = {}) {
     return (await this.chat(message, options)).reply;
   }
 
-  async _request(path, init, externalSignal) {
+  async close() {
+    const child = this._worker;
+    this._worker = null;
+    this._workerReady = null;
+    for (const [id, item] of this._pending) {
+      clearTimeout(item.timer);
+      item.reject(new AmilcarAIError("El motor local se cerró.", { code: "WORKER_CLOSED" }));
+      this._pending.delete(id);
+    }
+    if (child && !child.killed) child.kill();
+  }
+
+  async _ensureLocal() {
+    if (this._workerReady) return this._workerReady;
+    this._workerReady = new Promise((resolve, reject) => {
+      const workerPath = path.join(__dirname, "ai", "local_worker.py");
+      const child = spawn(this.python, ["-u", workerPath], {
+        cwd: __dirname,
+        stdio: ["pipe", "pipe", "pipe"],
+        env: process.env
+      });
+      this._worker = child;
+      const lines = readline.createInterface({ input: child.stdout });
+      let initialized = false;
+
+      lines.on("line", (line) => {
+        let data;
+        try { data = JSON.parse(line); }
+        catch { return; }
+        if (!initialized) {
+          initialized = true;
+          if (!data.ready) {
+            const err = new AmilcarAIError(data.error || "No se pudo iniciar el motor local.", { code: "LOCAL_START_FAILED" });
+            reject(err);
+            child.kill();
+            return;
+          }
+          resolve(data);
+          return;
+        }
+        const pending = this._pending.get(data.id);
+        if (!pending) return;
+        clearTimeout(pending.timer);
+        this._pending.delete(data.id);
+        if (data.error) pending.reject(new AmilcarAIError(data.error, { code: data.code || "LOCAL_INFERENCE_ERROR" }));
+        else pending.resolve(data);
+      });
+
+      child.stderr.on("data", (chunk) => {
+        if (process.env.AMILCAR_AI_DEBUG === "1") process.stderr.write("[AMILCAR AI] " + chunk.toString());
+      });
+
+      child.on("error", (cause) => {
+        const err = new AmilcarAIError("No se pudo iniciar Python. Instala Python y las dependencias de AMILCAR AI.", { code: "PYTHON_START_FAILED", cause });
+        if (!initialized) reject(err);
+        this._rejectPending(err);
+        this._worker = null;
+        this._workerReady = null;
+      });
+
+      child.on("exit", (code) => {
+        const err = new AmilcarAIError("El motor local terminó (código " + code + ").", { code: "WORKER_EXITED" });
+        if (!initialized) reject(err);
+        this._rejectPending(err);
+        this._worker = null;
+        this._workerReady = null;
+      });
+    });
+    return this._workerReady;
+  }
+
+  _sendLocal(payload, signal) {
+    if (signal?.aborted) return Promise.reject(new AmilcarAIError("La solicitud fue cancelada.", { code: "ABORTED" }));
+    const id = this._nextId++;
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        this._pending.delete(id);
+        reject(new AmilcarAIError("La solicitud local superó " + this.timeout + " ms.", { code: "TIMEOUT" }));
+      }, this.timeout);
+      const abort = () => {
+        clearTimeout(timer);
+        this._pending.delete(id);
+        reject(new AmilcarAIError("La solicitud fue cancelada.", { code: "ABORTED" }));
+      };
+      if (signal) signal.addEventListener("abort", abort, { once: true });
+      this._pending.set(id, {
+        resolve: (value) => { signal?.removeEventListener("abort", abort); resolve(value); },
+        reject: (error) => { signal?.removeEventListener("abort", abort); reject(error); },
+        timer
+      });
+      try {
+        this._worker.stdin.write(JSON.stringify({ ...payload, id }) + "\n");
+      } catch (cause) {
+        clearTimeout(timer);
+        this._pending.delete(id);
+        reject(new AmilcarAIError("No se pudo enviar la solicitud al motor local.", { code: "LOCAL_WRITE_FAILED", cause }));
+      }
+    });
+  }
+
+  _rejectPending(error) {
+    for (const [id, item] of this._pending) {
+      clearTimeout(item.timer);
+      item.reject(error);
+      this._pending.delete(id);
+    }
+  }
+
+  async _request(pathname, init, externalSignal) {
     const controller = new AbortController();
     let timedOut = false;
     const timeoutId = setTimeout(() => { timedOut = true; controller.abort(); }, this.timeout);
@@ -64,16 +194,13 @@ class AmilcarAI {
       else externalSignal.addEventListener("abort", abortFromCaller, { once: true });
     }
     try {
-      const response = await this.fetch(this.baseURL + path, {
-        ...init,
-        signal: controller.signal,
+      const response = await this.fetch(this.baseURL + pathname, {
+        ...init, signal: controller.signal,
         headers: { Accept: "application/json", ...(init.headers || {}) }
       });
       let data;
       try { data = await response.json(); }
-      catch (cause) {
-        throw new AmilcarAIError("La API devolvió una respuesta que no es JSON válido.", { code: "INVALID_JSON", status: response.status, cause });
-      }
+      catch (cause) { throw new AmilcarAIError("La API devolvió una respuesta que no es JSON válido.", { code: "INVALID_JSON", status: response.status, cause }); }
       if (!response.ok) {
         const detail = typeof data?.detail === "string" ? data.detail : "HTTP " + response.status;
         throw new AmilcarAIError(detail, { code: "API_ERROR", status: response.status, details: data });
