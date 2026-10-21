@@ -16,6 +16,10 @@ npm run ami:test
 
 Si ya tienes la rama clonada, ejecuta `git pull origin feat/ami-nano-termux` antes de probar. La instalación no descarga modelos de internet. El entrenamiento genera `artifacts/ami-nano.json` localmente.
 
+## Chat local en español (MVP conversacional)
+
+El comando `npm run ami:chat-es -- "hola"` responde preguntas frecuentes en español usando coincidencia local de intenciones y `data/dialogos-es.json`. Para conversar de forma interactiva ejecuta `npm run ami:chat-interactivo`. No usa internet, APIs ni dependencias adicionales. Para enseñar nuevas respuestas, edita el JSON y añade patrones y respuestas a una intención. Esta capa es un sistema local de diálogo por ejemplos, no un modelo generativo ni una comprensión semántica avanzada. El generador neuronal experimental se conserva por separado en `npm run ami:chat -- "hola"`.
+
 ## ¿Qué arquitectura tiene?
 
 Una red neuronal mínima: el carácter anterior se representa como índice de entrada y una matriz de pesos entrenables produce una distribución softmax del siguiente carácter. Los pesos empiezan aleatoriamente y se actualizan con descenso de gradiente usando pares de caracteres del corpus. Es un modelo de contexto de un carácter, pequeño y limitado; no es un Transformer ni entiende semántica.
