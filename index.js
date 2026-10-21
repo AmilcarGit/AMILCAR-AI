@@ -35,7 +35,7 @@ class AmilcarAI {
       try { parsed = new URL(baseURL); }
       catch { throw new TypeError("baseURL debe ser una URL HTTP o HTTPS válida."); }
       if (!["http:", "https:"].includes(parsed.protocol)) throw new TypeError("baseURL solo admite HTTP o HTTPS.");
-      this.baseURL = parsed.toString().replace(/\\/$/, "");
+      this.baseURL = parsed.toString().replace(/\/$/, "");
       this.chatPath = normalizePath(options.chatPath || "/chat/completions");
       this.fetch = options.fetch || globalThis.fetch;
       this.apiKey = options.apiKey || process.env.OPENROUTER_API_KEY || process.env.AMILCAR_AI_API_KEY || "";
