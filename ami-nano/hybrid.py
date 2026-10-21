@@ -52,7 +52,7 @@ def evaluate_candidate(question, candidate):
     overlap = meaningful & candidate_words
     vowel_count = sum(char.lower() in VOWELS for char in text)
     letters = sum(char.isalpha() for char in text)
-    repeated_run = re.search(r"(.)\\1{4,}", text.lower()) is not None
+    repeated_run = re.search(r"(.)\1{4,}", text.lower()) is not None
     checks = {
         "nonempty": bool(text),
         "length": 25 <= len(text) <= 600,
