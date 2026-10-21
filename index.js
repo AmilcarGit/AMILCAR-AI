@@ -84,7 +84,7 @@ class AmilcarAI {
         body: JSON.stringify({ model: this.model, messages: [{ role: "user", content: text.trim() }] })
       }, options.signal);
       const content = result?.choices?.[0]?.message?.content;
-      const reply = typeof content === "string" ? content : Array.isArray(content) ? content.filter((part) => part && typeof part.text === "string").map((part) => part.text).join("\\n") : "";
+      const reply = typeof content === "string" ? content : Array.isArray(content) ? content.filter((part) => part && typeof part.text === "string").map((part) => part.text).join("\n") : "";
       if (!reply.trim()) throw new AmilcarAIError("El proveedor no devolvió texto en choices[0].message.content.", { code: "INVALID_RESPONSE", details: result });
       return { reply: reply.trim(), model: typeof result.model === "string" ? result.model : this.model, trained: false, mode: "cloud" };
     }
