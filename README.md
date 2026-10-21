@@ -48,7 +48,7 @@ Instala esta versión de desarrollo con:
 
     npm install github:AmilcarGit/AMILCAR-AI#feat/ami-nano-hybrid-sdk-public
 
-El modo híbrido es experimental: busca coincidencias en diálogos y temas locales, y aplica reglas para rechazar candidatos neuronales de baja calidad. No garantiza responder sobre cualquier tema y debe indicar cuando no encuentra información fiable. Cada consulta ejecuta Python, así que la latencia puede ser mayor que la de un worker persistente.
+El modo híbrido es experimental: busca coincidencias en diálogos y temas locales, y aplica reglas para rechazar candidatos neuronales de baja calidad. No garantiza responder sobre cualquier tema y debe indicar cuando no encuentra información fiable. El generador neuronal es opcional y necesita un archivo de modelo compatible; sin ese archivo, el motor conserva las respuestas locales y usa el fallback honesto. Cada consulta ejecuta Python, así que la latencia puede ser mayor que la de un worker persistente.
 
 ### Ejemplo para Baileys
 
