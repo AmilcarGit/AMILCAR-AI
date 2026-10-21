@@ -32,6 +32,22 @@ test("native engine validates empty and oversized messages", async () => {
   await assert.rejects(ia.chat("demasiado largo"), { code: "MESSAGE_TOO_LONG" });
 });
 
+test("native engine calculates arithmetic locally without eval or external APIs", async () => {
+  const ia = new NativeAmilcarAI();
+  const sum = await ia.chat("¿Cuánto es 2 + 2?");
+  const order = await ia.chat("calcula (8 + 4) * 3");
+  const power = await ia.chat("2^5");
+  assert.equal(sum.intent, "math_calculation");
+  assert.equal(sum.reply, "El resultado es 4.");
+  assert.equal(order.reply, "El resultado es 36.");
+  assert.equal(power.reply, "El resultado es 32.");
+});
+
+test("native engine does not invent results for invalid arithmetic", async () => {
+  const result = await new NativeAmilcarAI().chat("cuanto es 5 / 0");
+  assert.notEqual(result.intent, "math_calculation");
+});
+
 test("native engine normalizes Spanish accents", () => {
   assert.equal(AmilcarNativeEngine.normalize("FOTOSÍNTESIS"), "fotosintesis");
 });
