@@ -16,12 +16,13 @@ class AmiNanoTests(unittest.TestCase):
             corpus = Path(tmp) / "corpus.txt"
             model = Path(tmp) / "model.json"
             corpus.write_text(
-                "hola amilcar ai. hola ami. soy un modelo local. " * 8,
+                ("hola ami. como estas? soy ami nano. " * 8),
                 encoding="utf-8",
             )
             env = os.environ.copy()
             env["AMI_CORPUS"] = str(corpus)
             env["AMI_MODEL_PATH"] = str(model)
+            env["AMI_EPOCHS"] = "3"
 
             trained = subprocess.run(
                 [sys.executable, str(TRAIN)],
@@ -31,13 +32,15 @@ class AmiNanoTests(unittest.TestCase):
             self.assertTrue(model.is_file(), "No se creó el checkpoint")
 
             data = json.loads(model.read_text(encoding="utf-8"))
-            self.assertEqual(data.get("format"), "ami-nano-char-bigram-v1")
+            self.assertEqual(data.get("format"), "ami-nano-neural-bigram-v2")
             self.assertTrue(data.get("trained_from_scratch"))
-            self.assertGreater(len(data.get("transitions", {})), 0)
+            self.assertEqual(data.get("architecture"), "one-hot-character-to-softmax")
+            self.assertEqual(len(data.get("weights", [])), len(data.get("vocab", [])))
+            self.assertTrue(data.get("weights"))
 
             generated = subprocess.run(
                 [sys.executable, str(GENERATE), "hola"],
-                cwd=ROOT, env=env, text=True, capture_output=True, timeout=30,
+                cwd=ROOT, env=env, text=True, capture_output=True, timeout=10,
             )
             self.assertEqual(generated.returncode, 0, generated.stderr)
             self.assertTrue(generated.stdout.strip(), "La generación salió vacía")
