@@ -18,7 +18,7 @@ class ModelRunner:
             self.load()
 
     def load(self) -> None:
-        checkpoint = torch.load(self.checkpoint_path, map_location=self.device)
+        checkpoint = torch.load(self.checkpoint_path, map_location=self.device, weights_only=True)
         self.vocab = checkpoint["vocab"]
         self.reverse_vocab = checkpoint["reverse_vocab"]
         self.model = AMITransformer(vocab_size=len(self.vocab), **checkpoint["config"]).to(self.device)
