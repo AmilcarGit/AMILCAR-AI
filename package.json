@@ -1,6 +1,6 @@
 {
   "name": "amilcar-ai",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Motor local experimental y SDK Node.js para AMILCAR AI; la API HTTP es opcional.",
   "main": "./index.js",
   "exports": {
