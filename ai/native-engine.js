@@ -42,12 +42,73 @@ function scoreEntry(query, entry) {
   return best;
 }
 
+function calculateLocally(message) {
+  if (typeof message !== "string" || message.length > 120) return null;
+  const normalized = message.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().trim();
+  const match = normalized.match(/^(?:(?:cuanto es|calcula|calcular|resuelve|resuelve esto|resultado de)\\s+)?([0-9\\s.+*/^()%-]+)$/);
+  if (!match) return null;
+  const expression = match[1].trim();
+  if (!/[+*/^()-]/.test(expression) || !/^[0-9\\s.+*/^()-]+$/.test(expression)) return null;
+  const tokens = expression.match(/\\d+(?:\\.\\d+)?|[()+*/^-]/g) || [];
+  if (!tokens.length || tokens.join("") !== expression.replace(/\\s+/g, "")) return null;
+  let position = 0;
+  function parsePrimary() {
+    const token = tokens[position++];
+    if (token === "(") {
+      const value = parseExpression();
+      if (tokens[position++] !== ")") throw new Error("Paréntesis incompletos");
+      return value;
+    }
+    if (token === "+") return parsePrimary();
+    if (token === "-") return -parsePrimary();
+    if (token === undefined || !/^\\d+(?:\\.\\d+)?$/.test(token)) throw new Error("Número no válido");
+    return Number(token);
+  }
+  function parsePower() {
+    let value = parsePrimary();
+    if (tokens[position] === "^") {
+      position++;
+      value = value ** parsePower();
+    }
+    return value;
+  }
+  function parseTerm() {
+    let value = parsePower();
+    while (tokens[position] === "*" || tokens[position] === "/") {
+      const operator = tokens[position++];
+      const right = parsePower();
+      if (operator === "/" && right === 0) throw new Error("No se puede dividir entre cero");
+      value = operator === "*" ? value * right : value / right;
+    }
+    return value;
+  }
+  function parseExpression() {
+    let value = parseTerm();
+    while (tokens[position] === "+" || tokens[position] === "-") {
+      const operator = tokens[position++];
+      const right = parseTerm();
+      value = operator === "+" ? value + right : value - right;
+    }
+    return value;
+  }
+  try {
+    const result = parseExpression();
+    if (position !== tokens.length || !Number.isFinite(result)) return null;
+    const rounded = Number(result.toPrecision(12));
+    return { reply: "El resultado es " + rounded + ".", intent: "math_calculation", confidence: 1 };
+  } catch {
+    return null;
+  }
+}
+
 function answer(message, context = {}) {
   if (typeof message !== "string" || !message.trim()) {
     return { reply: "Escríbeme una pregunta o un mensaje para empezar.", intent: "empty", confidence: 1 };
   }
 
   const query = normalize(message);
+  const calculation = calculateLocally(message);
+  if (calculation) return calculation;
   const previousIntent = context && typeof context.lastIntent === "string" ? context.lastIntent : "";
   const followUp = /^(explica mas|explicame mas|amplia|amplia la respuesta|dame mas detalles|continua|sigue|pon un ejemplo|dame un ejemplo|otro ejemplo|por que|porque|como asi)$/.test(query);
   if (followUp && previousIntent) {
@@ -139,4 +200,4 @@ function addKnowledge(entry) {
   return { id: normalizedId, terms: normalizedTerms.length };
 }
 
-module.exports = { answer, normalize, KNOWLEDGE, addKnowledge };
+module.exports = { answer, normalize, KNOWLEDGE, addKnowledge, calculateLocally };
