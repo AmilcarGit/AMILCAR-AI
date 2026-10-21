@@ -1,7 +1,7 @@
 {
   "name": "amilcar-ai",
   "version": "0.2.0",
-  "description": "Cliente Node.js oficial para integrar AMILCAR AI en bots de WhatsApp y aplicaciones Node.js.",
+  "description": "Motor local experimental y SDK Node.js para AMILCAR AI; la API HTTP es opcional.",
   "main": "./index.js",
   "exports": {
     ".": "./index.js"
@@ -11,7 +11,8 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --test tests-node/*.test.cjs"
+    "test": "node --test tests-node/*.test.cjs",
+    "check:local": "node scripts/check-local.js"
   },
   "keywords": [
     "amilcar-ai",
