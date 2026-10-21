@@ -1,61 +1,41 @@
-# AMILCAR AI — AMI Nano (prototipo local)
+# AMILCAR AI — AMI Nano 2.0
 
-AMILCAR AI es un proyecto open source para desarrollar modelos propios desde cero. Esta rama prepara un MVP que funciona en Termux/Android ARM64 sin API web, sin APIs comerciales y sin pesos preentrenados.
+AMI Nano 2.0 es un experimento de red neuronal de caracteres que se entrena desde cero y ejecuta localmente con Python estándar. No utiliza APIs, pesos preentrenados, PyTorch ni NumPy. Está pensado como MVP educativo para Termux/Android ARM64, no como sustituto de un LLM moderno.
 
-## Alcance honesto de AMI Nano v0
-
-La primera versión es un **modelo estadístico de caracteres (bigramas) entrenado desde cero**, no un Transformer ni un LLM moderno. Aprende transiciones de caracteres a partir de un corpus de texto local y genera texto corto. No usa pesos ajenos. Sirve para validar entrenamiento, guardado/carga, inferencia local e integración con bots antes de desarrollar una red neuronal pequeña.
-
-## Requisitos
-
-- Node.js 18+.
-- Python 3 (en Termux: `pkg install python`).
-- No necesita PyTorch, NumPy, C/C++, GPU, servidor HTTP ni claves API.
-- El prototipo no descarga datos ni modelos durante la instalación.
-
-## Termux
+## Instalar y probar en Termux
 
 ```bash
-pkg update
 pkg install nodejs python git -y
-git clone https://github.com/AmilcarGit/AMILCAR-AI.git
+git clone -b feat/ami-nano-termux https://github.com/AmilcarGit/AMILCAR-AI.git
 cd AMILCAR-AI
-git checkout feat/ami-nano-termux
 npm install
-npm test
 npm run ami:train
 npm run ami:chat -- "hola"
+npm run ami:test
 ```
 
-La primera ejecución de entrenamiento crea un corpus de demostración local y aprende un modelo nuevo. Sustituye `data/corpus.txt` por textos propios o con licencia compatible. No uses mensajes privados de WhatsApp sin permiso.
+Si ya tienes la rama clonada, ejecuta `git pull origin feat/ami-nano-termux` antes de probar. La instalación no descarga modelos de internet. El entrenamiento genera `artifacts/ami-nano.json` localmente.
 
-## Integración en BaseBot
+## ¿Qué arquitectura tiene?
 
-```js
-const { AmilcarAI } = require("amilcar-ai");
-const ia = new AmilcarAI({ mode: "local" });
-const result = await ia.chat("Hola");
-console.log(result.reply);
-```
+Una red neuronal mínima: el carácter anterior se representa como índice de entrada y una matriz de pesos entrenables produce una distribución softmax del siguiente carácter. Los pesos empiezan aleatoriamente y se actualizan con descenso de gradiente usando pares de caracteres del corpus. Es un modelo de contexto de un carácter, pequeño y limitado; no es un Transformer ni entiende semántica.
 
-La integración del SDK con AMI Nano se está preparando en esta rama; no instales esta rama en el bot estable hasta completar las pruebas de integración.
+- `data/corpus.txt`: ejemplos de entrenamiento editables.
+- `ami-nano/train.py`: entrenamiento y guardado atómico del checkpoint.
+- `ami-nano/generate.py`: inferencia local.
+- `tests-ami/test_ami_nano.py`: pruebas de entrenamiento, generación y errores.
+- `AMI_SEED`: semilla de entrenamiento (por defecto 7).
+- `AMI_EPOCHS`: épocas (por defecto 80; máximo 2000).
+- `AMI_MAX_NEW_TOKENS`: longitud máxima de salida (por defecto 180; máximo 500).
+- `AMI_TEMPERATURE`: diversidad de generación (por defecto 0.85).
 
-## Limitaciones
+## Límites y seguridad
 
-- La calidad inicial será muy baja: un modelo de caracteres no entiende el mundo ni sigue instrucciones como un LLM.
-- Los checkpoints son archivos JSON pequeños y deben regenerarse después de cambiar el corpus.
-- La instalación no descarga pesos de terceros.
-- El entrenamiento evolutivo significa por ahora repetir entrenamiento con corpus versionado y comparar métricas; no se permite que el bot reescriba automáticamente su propio código ni sus pesos en producción.
-- Los archivos de modelo grandes no deben guardarse en Git. Para este MVP, los checkpoints se generan localmente y se ignoran por Git.
+La calidad depende directamente del corpus; un modelo tan pequeño producirá errores y texto poco coherente. No entrenes con mensajes privados ni secretos. Usa solo textos propios o con licencia compatible. El bot no modifica automáticamente el código ni se autoactualiza en producción.
 
-## Privacidad y seguridad
+## Siguientes fases
 
-Todo se ejecuta localmente. No se envían mensajes a servicios externos. No entrenes con conversaciones privadas ni credenciales. Limita los tamaños de entrada y salida en producción.
-
-## Próximas fases
-
-1. Validar el MVP en Termux ARM64.
-2. Conectar el SDK y BaseBot sin modificar otros comandos.
-3. Añadir evaluación reproducible y versionado de corpus.
-4. Desarrollar una red neuronal pequeña con inicialización aleatoria propia.
-5. Diseñar un ejecutor C/C++ propio solo cuando las pruebas demuestren que es necesario.
+1. Evaluar calidad con un conjunto de preguntas reservadas que no se incluyan en el entrenamiento.
+2. Ampliar el contexto y comparar métricas reproducibles.
+3. Añadir una interfaz estable del SDK para BaseBot sin cambiar los demás comandos.
+4. Considerar un motor C/C++ únicamente después de perfilar el rendimiento.
