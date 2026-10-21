@@ -89,6 +89,26 @@ function answer(message, context = {}) {
   }
 
   const query = normalize(message);
+  const previousIntent = context && typeof context.lastIntent === "string" ? context.lastIntent : "";
+  const followUp = /^(explica mas|explicame mas|amplia|amplia la respuesta|dame mas detalles|continua|sigue|pon un ejemplo|dame un ejemplo|otro ejemplo|por que|porque|como asi)$/.test(query);
+  if (followUp && previousIntent) {
+    const previous = KNOWLEDGE.find((item) => item.id === previousIntent);
+    if (previous) {
+      const examples = {
+        fotosintesis: "Por ejemplo, una planta junto a una ventana recibe luz y la utiliza para fabricar azúcares.",
+        gravedad: "Por ejemplo, cuando sueltas una pelota, la gravedad la acelera hacia el suelo.",
+        programacion: "Por ejemplo, puedes empezar con una función pequeña, probarla con dos entradas y luego manejar errores.",
+        inteligencia_artificial: "Por ejemplo, un sistema puede reconocer patrones en texto, pero sus resultados deben verificarse.",
+        whatsapp_bots: "Por ejemplo, el bot recibe un mensaje, llama al motor y envía el texto que este devuelve."
+      };
+      return {
+        reply: previous.answer + "\\n\\nEjemplo: " + (examples[previousIntent] || "Podemos dividir el tema en partes pequeñas y revisar una por una."),
+        intent: previousIntent,
+        confidence: 0.8,
+        followUp: true
+      };
+    }
+  }
   if (/^(hola|holi|buenas|buenos dias|buenas tardes|buenas noches|hey|hi|hello)(\s|$)/.test(query)) {
     return { reply: GREETINGS[hash(query) % GREETINGS.length], intent: "greeting", confidence: 0.99 };
   }
