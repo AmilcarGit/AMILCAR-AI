@@ -17,7 +17,7 @@ class AmilcarAIError extends Error {
 
 class AmilcarAI {
   constructor(options = {}) {
-    this.mode = options.mode || "api";
+    this.mode = options.mode || process.env.AMILCAR_AI_MODE || "local";
     if (!["api", "local"].includes(this.mode)) throw new TypeError("mode debe ser 'api' o 'local'.");
     this.timeout = positiveInteger(options.timeout ?? 30000, "timeout");
     this.maxMessageLength = positiveInteger(options.maxMessageLength ?? 2000, "maxMessageLength");
