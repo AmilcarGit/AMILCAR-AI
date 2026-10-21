@@ -1,6 +1,6 @@
 # AMILCAR AI
 
-https://files.catbox.moe/qbg4v1.png
+
 
 IA abierta y experimental de AmilcarGit, con una interfaz cyberpunk, una API local y AMI-Base, un modelo pequeño entrenable desde pesos aleatorios. Incluye un SDK oficial para integrar el motor con bots de WhatsApp hechos en Node.js.
 
