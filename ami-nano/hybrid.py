@@ -7,6 +7,8 @@ import subprocess
 import urllib.error
 import urllib.request
 import sys
+import shutil
+import time
 from pathlib import Path
 
 from chat_es import load_dialogs, normalize
@@ -152,9 +154,44 @@ def generate_candidate(message, timeout=8):
     return output or None
 
 
+def _ensure_local_llm_server(model_path, endpoint):
+    if not endpoint.startswith("http://127.0.0.1:8081/"):
+        return False
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:8081/health", timeout=1):
+            return True
+    except (OSError, TimeoutError, urllib.error.URLError):
+        pass
+
+    server = shutil.which("llama-server")
+    if not server:
+        return False
+    try:
+        subprocess.Popen(
+            [server, "-m", str(model_path), "--host", "127.0.0.1", "--port", "8081", "-c", "2048"],
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            close_fds=True,
+        )
+    except OSError:
+        return False
+
+    for _ in range(50):
+        time.sleep(0.5)
+        try:
+            with urllib.request.urlopen("http://127.0.0.1:8081/health", timeout=1):
+                return True
+        except (OSError, TimeoutError, urllib.error.URLError):
+            continue
+    return False
+
+
 def generate_llm_candidate(message, timeout=None):
-    model_path = os.environ.get("AMILCAR_AI_LLM_MODEL", "").strip()
-    if not model_path or not Path(model_path).is_file():
+    default_model = Path.home() / ".cache" / "amilcar-ai" / "models" / "qwen2.5-0.5b-instruct-q2_k.gguf"
+    model_path = os.environ.get("AMILCAR_AI_LLM_MODEL", "").strip() or str(default_model)
+    if not Path(model_path).is_file():
         return None
 
     endpoint = os.environ.get(
@@ -163,6 +200,9 @@ def generate_llm_candidate(message, timeout=None):
     ).strip()
     if not endpoint.startswith(("http://127.0.0.1:", "http://localhost:", "http://[::1]:")):
         return None
+    if endpoint == "http://127.0.0.1:8081/v1/chat/completions":
+        if not _ensure_local_llm_server(model_path, endpoint):
+            return None
 
     try:
         timeout = timeout or max(3, int(os.environ.get("AMILCAR_AI_LLM_TIMEOUT", "90")))
