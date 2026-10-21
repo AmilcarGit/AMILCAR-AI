@@ -100,4 +100,5 @@ function positiveInteger(value, name) {
   return value;
 }
 
-module.exports = { AmilcarAI, AmilcarAIError };
+exports.AmilcarAI = AmilcarAI;
+exports.AmilcarAIError = AmilcarAIError;
