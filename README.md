@@ -293,6 +293,17 @@ uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
 
 El entrenamiento es una tarea separada y no debe confundirse con instalar el SDK en un bot.
 
+#### Que responda en formato de conversación
+
+El modelo responde con el formato `Usuario: ... / AMILCAR AI: ...`, así que debe entrenarse con ejemplos en ese mismo formato. Este comando los genera a partir de `data/dialogos-es.json` y `data/knowledge-es.json`:
+
+```bash
+python -m ai.training.build_dialog_corpus --output data/dialogos_train.txt
+python -m ai.training.train --data data/dialogos_train.txt --vocab-size 1000 --steps 3000
+```
+
+Así responderá bien a lo que esté en esos archivos y de forma mucho más floja a lo que no. Para ampliar sus respuestas, añade intenciones a `data/dialogos-es.json` y vuelve a generar y entrenar.
+
 #### Preparar tus datos
 
 El corpus de demostración (`data/sample_corpus.txt`) solo sirve para probar que el código funciona: un modelo que hable español necesita muchos más textos. Reúne los tuyos (archivos `.txt` o `.md` de los que tengas derecho a entrenar) y prepáralos:
