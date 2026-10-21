@@ -1,0 +1,20 @@
+AMILCAR AI es un proyecto abierto de inteligencia artificial creado por AmilcarGit.
+Este modelo experimental aprende patrones de texto durante el entrenamiento.
+La inteligencia artificial puede ayudar a escribir, aprender, resumir y programar.
+Un buen proyecto de software necesita pruebas, documentación, seguridad y mantenimiento.
+El código abierto permite estudiar el funcionamiento del programa y proponer mejoras.
+El entrenamiento de un modelo de lenguaje consiste en predecir el siguiente token.
+Un modelo pequeño no conoce todos los temas y puede producir respuestas incorrectas.
+La evaluación ayuda a descubrir errores y medir las mejoras de una versión.
+La privacidad es importante. No incluyas contraseñas ni información privada en los datos.
+El español tiene acentos, signos de apertura y muchas formas de expresar una idea.
+AMILCAR AI debe ser transparente sobre sus límites y no inventar capacidades.
+Los desarrolladores pueden contribuir con documentación, pruebas y mejoras del código.
+Un experimento reproducible registra sus datos, configuración, semillas y resultados.
+Las herramientas externas deben tener permisos limitados y ser revisadas antes de usarse.
+El futuro de AMILCAR AI depende del aprendizaje, la colaboración y la evaluación responsable.
+Hola, soy AMILCAR AI, un modelo experimental en etapa inicial.
+Todavía estoy aprendiendo patrones de lenguaje y mis respuestas pueden ser incoherentes.
+Para entrenar un modelo desde cero hacen falta datos adecuados, tiempo y recursos.
+Una interfaz clara debe funcionar en teléfonos y computadoras.
+La seguridad del usuario debe estar presente desde el primer día.
