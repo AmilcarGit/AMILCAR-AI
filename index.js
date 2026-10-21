@@ -20,7 +20,7 @@ class AmilcarAIError extends Error {
 class AmilcarAI {
   constructor(options = {}) {
     this.mode = options.mode || process.env.AMILCAR_AI_MODE || "local";
-    if (!["api", "local", "hybrid"].includes(this.mode)) throw new TypeError("mode debe ser 'api', 'local' o 'hybrid'.");
+    if (!["api", "local", "hybrid", "cloud"].includes(this.mode)) throw new TypeError("mode debe ser 'api', 'local', 'hybrid' o 'cloud'.");
     this.timeout = positiveInteger(options.timeout ?? 30000, "timeout");
     this.maxMessageLength = positiveInteger(options.maxMessageLength ?? 2000, "maxMessageLength");
     this.python = options.python || process.env.AMILCAR_AI_PYTHON || "python";
@@ -28,6 +28,20 @@ class AmilcarAI {
     this._workerReady = null;
     this._pending = new Map();
     this._nextId = 1;
+
+    if (this.mode === "cloud") {
+      const baseURL = options.baseURL || process.env.AMILCAR_AI_URL || "https://openrouter.ai/api/v1";
+      let parsed;
+      try { parsed = new URL(baseURL); }
+      catch { throw new TypeError("baseURL debe ser una URL HTTP o HTTPS válida."); }
+      if (!["http:", "https:"].includes(parsed.protocol)) throw new TypeError("baseURL solo admite HTTP o HTTPS.");
+      this.baseURL = parsed.toString().replace(/\\/$/, "");
+      this.chatPath = normalizePath(options.chatPath || "/chat/completions");
+      this.fetch = options.fetch || globalThis.fetch;
+      this.apiKey = options.apiKey || process.env.OPENROUTER_API_KEY || process.env.AMILCAR_AI_API_KEY || "";
+      this.model = options.model || process.env.AMILCAR_AI_MODEL || "openrouter/free";
+      if (typeof this.fetch !== "function") throw new Error("AMILCAR AI necesita Node.js 18 o superior, con fetch disponible.");
+    }
 
     if (this.mode === "api") {
       const baseURL = options.baseURL || process.env.AMILCAR_AI_URL || "http://127.0.0.1:8000";
@@ -44,6 +58,7 @@ class AmilcarAI {
   }
 
   async health(options = {}) {
+    if (this.mode === "cloud") return { ready: Boolean(this.apiKey), model: this.model, mode: "cloud", local: false };
     if (this.mode === "hybrid") return { ready: true, model: "AMI-Nano-Hybrid", mode: "hybrid", local: true };
     if (this.mode === "local") {
       await this._ensureLocal();
@@ -60,6 +75,19 @@ class AmilcarAI {
     }
 
     if (this.mode === "hybrid") return this._chatHybrid(text.trim(), options.signal);
+
+    if (this.mode === "cloud") {
+      if (!this.apiKey) throw new AmilcarAIError("Falta OPENROUTER_API_KEY. Crea una clave en OpenRouter y configúrala como variable de entorno.", { code: "MISSING_API_KEY" });
+      const result = await this._request(this.chatPath, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + this.apiKey },
+        body: JSON.stringify({ model: this.model, messages: [{ role: "user", content: text.trim() }] })
+      }, options.signal);
+      const content = result?.choices?.[0]?.message?.content;
+      const reply = typeof content === "string" ? content : Array.isArray(content) ? content.filter((part) => part && typeof part.text === "string").map((part) => part.text).join("\\n") : "";
+      if (!reply.trim()) throw new AmilcarAIError("El proveedor no devolvió texto en choices[0].message.content.", { code: "INVALID_RESPONSE", details: result });
+      return { reply: reply.trim(), model: typeof result.model === "string" ? result.model : this.model, trained: false, mode: "cloud" };
+    }
 
     if (this.mode === "local") {
       await this._ensureLocal();
