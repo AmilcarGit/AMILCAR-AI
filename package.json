@@ -4,7 +4,8 @@
   "description": "Motor local experimental y SDK Node.js para AMILCAR AI; la API HTTP es opcional.",
   "main": "./index.js",
   "exports": {
-    ".": "./index.js"
+    ".": "./index.js",
+    "./native": "./native.js"
   },
   "type": "commonjs",
   "engines": {
