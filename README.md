@@ -54,29 +54,11 @@ El modo híbrido es experimental: busca coincidencias en diálogos y temas local
 
 ### Generación automática con un modelo GGUF local en Android/Termux
 
-El modo híbrido puede usar opcionalmente un modelo de lenguaje GGUF mediante `llama.cpp`. El modelo se descarga por separado y permanece en el dispositivo; las consultas se envían únicamente al servidor local `127.0.0.1`, no a una API externa. Si no configuras el modelo, se conserva el comportamiento híbrido anterior.
+El modo híbrido puede descargar automáticamente un modelo GGUF durante `npm install` y guardar una copia reutilizable en `~/.cache/amilcar-ai/models`. En Termux intenta instalar también `llama.cpp` con `pkg`. Al recibir una consulta, AMILCAR AI inicia `llama-server` localmente si está instalado y todavía no está activo. Las consultas permanecen en el dispositivo y no usan una API externa.
 
-En Termux (Android de 64 bits):
+El modelo Qwen2.5-0.5B Q2_K ocupa aproximadamente 415 MB; reserva espacio adicional para la memoria de ejecución. Es un modelo pequeño para pruebas, no una garantía de respuestas correctas ni de calidad comparable con modelos grandes. Si no hay conexión durante la instalación, el bot podrá instalarse igualmente, pero la generación con el modelo no estará disponible hasta completar la descarga.
 
-    pkg update
-    pkg install llama-cpp curl -y
-    mkdir -p ~/models
-    curl -L --fail --retry 3 "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf?download=true" -o ~/models/qwen2.5-0.5b-instruct-q4_k_m.gguf
-
-El archivo ocupa aproximadamente 491 MB; reserva espacio adicional para la memoria de ejecución. Es un modelo pequeño para pruebas, no una garantía de respuestas correctas ni de calidad comparable con modelos grandes.
-
-**Terminal 1:** inicia el servidor local y déjalo abierto:
-
-    llama-server -m "$HOME/models/qwen2.5-0.5b-instruct-q4_k_m.gguf" --host 127.0.0.1 --port 8081 -c 2048
-
-**Terminal 2:** configura BaseBot para usar ese modelo. Mantén estas variables en la misma sesión donde inicies el bot:
-
-    export AMILCAR_AI_LLM_MODEL="$HOME/models/qwen2.5-0.5b-instruct-q4_k_m.gguf"
-    export AMILCAR_AI_LLM_URL="http://127.0.0.1:8081/v1/chat/completions"
-    export AMILCAR_AI_LLM_TOKENS=180
-    export AMILCAR_AI_LLM_CONTEXT=2048
-
-El SDK busca primero una respuesta local revisada; si no encuentra una coincidencia, consulta el modelo GGUF por el servidor local y aplica comprobaciones básicas de texto. Si el servidor no está disponible, conserva el comportamiento anterior. Variables opcionales: `AMILCAR_AI_LLM_TIMEOUT` (segundos, por defecto 90) y `AMILCAR_AI_LLM_TOKENS` (32–400). No expongas el servidor en una interfaz pública; mantenlo enlazado a `127.0.0.1`.
+Para omitir la descarga automática, configura `AMILCAR_AI_AUTO_INSTALL_MODEL=0` antes de ejecutar `npm install`. En sistemas que no sean Termux, instala `llama.cpp` y asegúrate de que `llama-server` esté en PATH. El servidor usa únicamente `127.0.0.1:8081`; no lo expongas en una interfaz pública. Variables opcionales: `AMILCAR_AI_LLM_TIMEOUT` (segundos, por defecto 90) y `AMILCAR_AI_LLM_TOKENS` (32–400).
 
 ### Ejemplo para Baileys
 
