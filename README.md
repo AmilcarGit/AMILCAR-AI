@@ -83,6 +83,60 @@ En otra terminal, dentro del repositorio:
     npm install
     npm run dev
 
+## Usar AMILCAR AI sin web ni API
+
+El SDK puede ejecutar el motor de Python como un proceso local persistente. Esto no necesita navegador, página web, servidor HTTP ni una API comercial. Sí necesita Python y las dependencias de este proyecto instaladas, además de un checkpoint entrenado.
+
+### Preparar el motor local
+
+Clona el repositorio y entra en él:
+
+    git clone https://github.com/AmilcarGit/AMILCAR-AI.git
+    cd AMILCAR-AI
+    python -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    python -m ai.training.train --steps 300
+
+Para entrenar más pasos sobre el checkpoint existente, usando el mismo vocabulario:
+
+    python -m ai.training.train --steps 1000 --resume
+
+El entrenamiento progresivo solo admite caracteres que ya estén en el vocabulario del checkpoint. Si el corpus necesita caracteres nuevos, crea una nueva versión del modelo sin `--resume` y evalúa antes de reemplazar la versión anterior.
+
+### Usar el motor desde Node.js
+
+Instala el SDK en el proyecto del bot:
+
+    npm install github:AmilcarGit/AMILCAR-AI
+
+Configura la ruta del checkpoint creado en el clon del repositorio. Ajusta la ruta a tu sistema operativo:
+
+    AMILCAR_AI_MODE=local
+    AMILCAR_AI_MODEL_PATH=/ruta/absoluta/AMILCAR-AI/artifacts/ami-base.pt
+    AMILCAR_AI_PYTHON=/ruta/absoluta/AMILCAR-AI/.venv/bin/python
+
+Ejemplo JavaScript:
+
+```js
+const { AmilcarAI } = require("amilcar-ai");
+
+const ia = new AmilcarAI({
+  mode: process.env.AMILCAR_AI_MODE || "local",
+  timeout: 120000
+});
+
+const respuesta = await ia.generate("Hola, ¿quién eres?");
+console.log(respuesta);
+
+// Cuando el bot se apague, cierra el proceso local:
+await ia.close();
+```
+
+El proceso local carga el checkpoint una vez y atiende varias solicitudes. En producción, cierra el cliente al apagar el bot. Si prefieres usar la API existente, omite `mode: "local"` o establece `AMILCAR_AI_MODE=api`.
+
+**Importante:** el paquete instalado desde GitHub contiene el código, pero no incluye automáticamente los pesos generados por tu entrenamiento porque los archivos `.pt` están excluidos de Git. `AMILCAR_AI_MODEL_PATH` apunta al checkpoint que generaste en tu clon local. No subas checkpoints grandes o de baja calidad sin evaluarlos; Git LFS o GitHub Releases son mejores opciones cuando crezcan.
+
 ## API HTTP
 - `GET /health`: estado del servicio y disponibilidad del modelo.
 - `POST /api/chat`: genera una respuesta a partir de `{"message":"Hola AMILCAR AI"}`.
@@ -90,7 +144,7 @@ En otra terminal, dentro del repositorio:
 
 ## Modelo y limitaciones
 
-AMI-Base es un Transformer pequeño de PyTorch que empieza con pesos aleatorios. El corpus incluido es solo una demostración técnica; no es un modelo avanzado ni un reemplazo de una IA comercial. Sus respuestas pueden ser incoherentes. Antes de entrenar con datos externos, revisa su procedencia, permisos y licencia. Los checkpoints se guardan localmente en `artifacts/ami-base.pt` y no se incluyen en Git.
+AMI-Base es un Transformer pequeño de PyTorch que empieza con pesos aleatorios. El corpus incluido es solo una demostración técnica; no es un modelo avanzado ni un reemplazo de una IA comercial. Sus respuestas pueden ser incoherentes. Antes de entrenar con datos externos, revisa su procedencia, permisos y licencia. Los checkpoints se guardan localmente en `artifacts/ami-base.pt` y no se incluyen en Git por defecto. Para distribuir un checkpoint validado y pequeño se puede añadir expresamente; para archivos grandes, usa Git LFS o GitHub Releases. No confundas un checkpoint experimental con un modelo conversacional competente.
 
 ## Pruebas
 
