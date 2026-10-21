@@ -23,6 +23,10 @@ class AmiNano21KnowledgeTests(unittest.TestCase):
             "necesitas internet": "internet",
             "quien te creo": "amilcar",
             "que es una red neuronal": "red neuronal",
+            "donde sos tu": "termux",
+            "donde estas": "local",
+            "donde esta tu creador": "ubicación actual",
+            "aprendes de cada mensaje": "no aprendo automáticamente",
         }
         for question, expected in cases.items():
             with self.subTest(question=question):
