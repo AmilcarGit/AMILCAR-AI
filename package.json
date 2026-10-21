@@ -17,7 +17,9 @@
     "ami:chat": "python ami-nano/generate.py",
     "ami:test": "python -m unittest discover -s tests-ami -v",
     "ami:chat-es": "python ami-nano/chat_es.py",
-    "ami:chat-interactivo": "python ami-nano/chat_es.py"
+    "ami:chat-interactivo": "python ami-nano/chat_es.py",
+    "ami:chat-hibrido": "python ami-nano/hybrid.py",
+    "ami:chat-hibrido-interactivo": "python ami-nano/hybrid.py"
   },
   "keywords": [
     "amilcar-ai",
