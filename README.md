@@ -133,9 +133,33 @@ El modo local del motor AMI-Base requiere Python, las dependencias indicadas en 
 
 Consulta [Preparar el motor local](#-ejecutar-el-motor-completo) y comprueba los requisitos antes de seleccionar este modo.
 
-### `api` — backend HTTP opcional
+### `cloud` — modelos de IA por Internet sin descargar modelos
 
-El modo API utiliza una instancia del backend configurada por el usuario. No es obligatorio para el SDK ni para el modo híbrido local.
+El modo `cloud` usa la API compatible con OpenAI de OpenRouter. Por defecto selecciona `openrouter/free`, que enruta la solicitud a un modelo disponible de la colección gratuita. La disponibilidad, calidad y límites dependen del proveedor; el plan gratuito no garantiza servicio ilimitado ni respuestas siempre correctas.
+
+1. Crea una cuenta y una clave en [OpenRouter](https://openrouter.ai/).
+2. Configura la clave en una variable de entorno llamada `OPENROUTER_API_KEY`. No la pegues en el código ni la subas a GitHub.
+3. Selecciona `mode: "cloud"` en el SDK o configura `AMILCAR_AI_MODE=cloud`.
+
+Ejemplo:
+
+```js
+const { AmilcarAI } = require("amilcar-ai");
+
+const ia = new AmilcarAI({
+  mode: "cloud",
+  model: process.env.AMILCAR_AI_MODEL || "openrouter/free"
+});
+
+const resultado = await ia.chat("Explícame la fotosíntesis en español");
+console.log(resultado.reply);
+```
+
+Variables: `OPENROUTER_API_KEY` (clave), `AMILCAR_AI_MODEL` (opcional, por defecto `openrouter/free`) y `AMILCAR_AI_URL` (opcional, por defecto `https://openrouter.ai/api/v1`). No se descarga ningún modelo local. Las solicitudes requieren Internet y se envían al proveedor seleccionado; revisa sus condiciones de privacidad antes de enviar información sensible.
+
+### `api` — backend HTTP propio opcional
+
+El modo `api` sigue disponible para usar una instancia propia del backend con `/api/chat` y `/health`. No se modifica su formato ni se elimina el modo híbrido local.
 
 ## 📲 Modelo GGUF local en Android / Termux
 
@@ -215,14 +239,14 @@ npm run dev
 
 | Variable | Propósito |
 | --- | --- |
-| `AMILCAR_AI_MODE` | Selecciona el modo de ejecución utilizado por la integración. |
+| `AMILCAR_AI_MODE` | Selecciona `cloud`, `api`, `local` o `hybrid`. |
 | `AMILCAR_AI_MODEL_PATH` | Ruta al checkpoint de AMI-Base para el motor Python. |
 | `AMILCAR_AI_PYTHON` | Ejecutable de Python que utilizará el motor local. |
 | `AMILCAR_AI_LLM_MODEL` | Ruta opcional a un modelo GGUF. |
 | `AMILCAR_AI_LLM_URL` | Endpoint local compatible con el formato de chat; por defecto, `http://127.0.0.1:8081/v1/chat/completions`. |
 | `AMILCAR_AI_LLM_TIMEOUT` | Tiempo máximo de espera para la generación local, en segundos. |
 | `AMILCAR_AI_LLM_TOKENS` | Límite de tokens de respuesta, dentro del rango admitido por el motor. |
-| `AMILCAR_AI_AUTO_INSTALL_MODEL` | Usa `0` para desactivar la descarga automática durante la instalación. |
+| `AMILCAR_AI_AUTO_INSTALL_MODEL` | Usa `1` para solicitar la descarga opcional del modelo local. |
 
 La disponibilidad y el efecto de cada variable dependen del modo y de la versión instalada. No publiques claves ni información privada en el repositorio.
 
