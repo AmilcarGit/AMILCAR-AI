@@ -15,7 +15,9 @@
     "check:local": "node scripts/check-local.js",
     "ami:train": "python ami-nano/train.py",
     "ami:chat": "python ami-nano/generate.py",
-    "ami:test": "python -m unittest discover -s tests-ami -v"
+    "ami:test": "python -m unittest discover -s tests-ami -v",
+    "ami:chat-es": "python ami-nano/chat_es.py",
+    "ami:chat-interactivo": "python ami-nano/chat_es.py"
   },
   "keywords": [
     "amilcar-ai",
