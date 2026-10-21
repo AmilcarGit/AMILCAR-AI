@@ -17,3 +17,6 @@ artifacts/
 *.ckpt
 .DS_Store
 Thumbs.db
+
+# Datos preparados localmente
+data/processed/

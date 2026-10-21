@@ -284,6 +284,32 @@ uvicorn apps.api.main:app --host 127.0.0.1 --port 8000
 
 El entrenamiento es una tarea separada y no debe confundirse con instalar el SDK en un bot.
 
+#### Preparar tus datos
+
+El corpus de demostración (`data/sample_corpus.txt`) solo sirve para probar que el código funciona: un modelo que hable español necesita muchos más textos. Reúne los tuyos (archivos `.txt` o `.md` de los que tengas derecho a entrenar) y prepáralos:
+
+```bash
+python -m ai.training.prepare_data MIS_TEXTOS/ --output data/processed
+```
+
+Esto normaliza Unicode, descarta fragmentos muy cortos, elimina párrafos duplicados y separa entrenamiento y validación de forma reproducible. Genera `train.txt`, `val.txt` y `manifest.json`, que registra los archivos usados, sus hashes y los conteos. `data/processed/` no se sube a Git.
+
+#### Tokenizador propio (BPE)
+
+`ai/tokenizer.py` es un tokenizador BPE a nivel de bytes escrito desde cero y sin dependencias: sirve para cualquier texto (acentos, ñ, emojis) y no tiene token "desconocido". Se entrena con tu corpus:
+
+```python
+from ai.tokenizer import BPETokenizer
+
+texto = open("data/processed/train.txt", encoding="utf-8").read()
+tok = BPETokenizer.train(texto, vocab_size=4000)
+tok.save("artifacts/tokenizer.json")
+ids = tok.encode("Hola, ¿cómo estás?")
+print(tok.decode(ids))
+```
+
+El texto escrito por un usuario nunca se interpreta como token de control (`allow_special=False` por defecto). Todavía no está conectado al entrenamiento del modelo, que sigue usando caracteres.
+
 ### Interfaz web
 
 ```bash
@@ -338,6 +364,13 @@ Los flujos de GitHub Actions ejecutan comprobaciones automatizadas. Consulta la 
 - [x] Ejemplo de integración con Baileys.
 - [x] Preparación inicial para descargar un modelo GGUF local.
 - [x] Añadir un motor nativo ligero sin APIs ni descargas de modelos.
+- [x] Tokenizador BPE propio con pruebas (`ai/tokenizer.py`).
+- [x] Preparación reproducible del corpus: limpieza, deduplicación y validación (`ai/training/prepare_data.py`).
+- [ ] Conectar el tokenizador BPE al entrenamiento y al modelo.
+- [ ] Reemplazar `nn.TransformerEncoder` por bloques propios (RMSNorm, RoPE, atención causal con KV cache).
+- [ ] Entrenamiento con validación, perplexity y scheduler de learning rate.
+- [ ] Muestreo con top-k y top-p en la generación.
+- [ ] Reunir un corpus grande en español con licencia verificada.
 - [ ] Ampliar y evaluar la base de conocimientos del motor nativo.
 - [ ] Validar la instalación automática en diferentes versiones de Termux y Linux.
 - [ ] Mejorar la calidad de generación y ampliar las evaluaciones en español.
