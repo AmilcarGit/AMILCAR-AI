@@ -6,6 +6,7 @@ class NativeAmilcarAI {
   constructor(options = {}) {
     this.mode = "native";
     this.history = [];
+    this.knowledge = engine.KNOWLEDGE.map((entry) => ({ ...entry, terms: [...entry.terms] }));
     this.maxHistory = Number.isSafeInteger(options.maxHistory) && options.maxHistory >= 0 ? Math.min(options.maxHistory, 20) : 6;
     this.maxMessageLength = Number.isSafeInteger(options.maxMessageLength) && options.maxMessageLength > 0
       ? options.maxMessageLength
@@ -26,7 +27,7 @@ class NativeAmilcarAI {
       throw error;
     }
     const previous = [...this.history].reverse().find((item) => item.intent && item.intent !== "unknown");
-    const result = engine.answer(text, { lastIntent: previous?.intent || "" });
+    const result = engine.answer(text, { lastIntent: previous?.intent || "", knowledge: this.knowledge });
     if (this.maxHistory > 0) {
       this.history.push({ role: "user", text: text.trim() });
       this.history.push({ role: "assistant", text: result.reply, intent: result.intent });
@@ -51,7 +52,7 @@ class NativeAmilcarAI {
   }
 
   addKnowledge(entry) {
-    return engine.addKnowledge(entry);
+    return engine.addKnowledge(entry, this.knowledge);
   }
 
   async generate(message) {
