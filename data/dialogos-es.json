@@ -81,7 +81,7 @@
       "usas otras inteligencias artificiales"
     ],
     "responses": [
-      "Esta función responde localmente en el dispositivo. No llama a una API ni descarga respuestas de otro servicio."
+      "Esta función responde localmente en el dispositivo. No necesita internet, no llama a una API ni descarga respuestas de otro servicio."
     ]
   },
   {

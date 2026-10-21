@@ -1,0 +1,579 @@
+[
+  {
+    "intent": "saludo",
+    "patterns": [
+      "hola",
+      "holi",
+      "buenas",
+      "hola ami",
+      "que tal",
+      "hey"
+    ],
+    "responses": [
+      "¡Hola! Soy AMI Nano, la IA experimental de AMILCAR AI. ¿En qué puedo ayudarte?"
+    ]
+  },
+  {
+    "intent": "estado",
+    "patterns": [
+      "como estas",
+      "que tal estas",
+      "como te encuentras",
+      "estas bien"
+    ],
+    "responses": [
+      "Estoy funcionando localmente. Todavía soy experimental, pero puedo ayudarte con preguntas que estén en mi base de conocimientos."
+    ]
+  },
+  {
+    "intent": "identidad",
+    "patterns": [
+      "quien eres",
+      "como te llamas",
+      "que eres",
+      "presentate"
+    ],
+    "responses": [
+      "Soy AMI Nano, parte de AMILCAR AI, un proyecto abierto que desarrolla herramientas de IA local. Mi modelo neuronal se entrena desde pesos inicializados aleatoriamente."
+    ]
+  },
+  {
+    "intent": "creador",
+    "patterns": [
+      "quien te creo",
+      "quien es tu creador",
+      "quien te hizo"
+    ],
+    "responses": [
+      "El proyecto AMILCAR AI está desarrollado por AmilcarGit."
+    ]
+  },
+  {
+    "intent": "proyecto",
+    "patterns": [
+      "que es amilcar ai",
+      "hablame de amilcar ai",
+      "que es este proyecto"
+    ],
+    "responses": [
+      "AMILCAR AI busca desarrollar una IA propia que pueda ejecutarse localmente, sin depender de APIs comerciales. Es un proyecto experimental que se mejora con datos, código y pruebas."
+    ]
+  },
+  {
+    "intent": "privacidad",
+    "patterns": [
+      "tus respuestas se envian a internet",
+      "guardas mis datos",
+      "privacidad",
+      "es privado"
+    ],
+    "responses": [
+      "En el modo local, las respuestas se procesan en tu dispositivo. No compartas contraseñas, claves API ni datos privados en el corpus de entrenamiento."
+    ]
+  },
+  {
+    "intent": "offline",
+    "patterns": [
+      "funcionas sin internet",
+      "necesitas internet",
+      "usas una api",
+      "usas otras inteligencias artificiales"
+    ],
+    "responses": [
+      "El chat local de AMI Nano no necesita una API ni una conexión a internet para responder con su base de conocimientos instalada."
+    ]
+  },
+  {
+    "intent": "capacidades",
+    "patterns": [
+      "que puedes hacer",
+      "para que sirves",
+      "que sabes hacer",
+      "ayudame"
+    ],
+    "responses": [
+      "Puedo responder algunas preguntas incluidas en mi base local. No soy todavía una IA general: si no encuentro información fiable, debo reconocerlo en lugar de inventar."
+    ]
+  },
+  {
+    "intent": "limites",
+    "patterns": [
+      "cuales son tus limites",
+      "eres perfecta",
+      "puedes equivocarte",
+      "eres una ia avanzada"
+    ],
+    "responses": [
+      "Soy un sistema experimental. La base de conocimientos ofrece respuestas preparadas y el modelo neuronal pequeño puede generar texto incoherente. No debes tratar mis respuestas como infalibles."
+    ]
+  },
+  {
+    "intent": "gracias",
+    "patterns": [
+      "gracias",
+      "muchas gracias",
+      "te lo agradezco"
+    ],
+    "responses": [
+      "¡De nada! Gracias por ayudar a probar AMI Nano."
+    ]
+  },
+  {
+    "intent": "despedida",
+    "patterns": [
+      "adios",
+      "hasta luego",
+      "nos vemos",
+      "chao"
+    ],
+    "responses": [
+      "¡Hasta luego! Gracias por conversar con AMI Nano."
+    ]
+  },
+  {
+    "intent": "bienestar",
+    "patterns": [
+      "estoy bien",
+      "estoy mal",
+      "estoy triste",
+      "me siento feliz"
+    ],
+    "responses": [
+      "Gracias por contármelo. Si quieres, puedes contarme más; intentaré acompañarte, aunque soy una IA experimental."
+    ]
+  },
+  {
+    "intent": "nombre",
+    "patterns": [
+      "como me llamo",
+      "sabes mi nombre",
+      "recuerdas mi nombre"
+    ],
+    "responses": [
+      "Todavía no sé tu nombre si no me lo has dicho en esta conversación. Puedes decirme cómo quieres que te llame."
+    ]
+  },
+  {
+    "intent": "programacion",
+    "patterns": [
+      "que es programar",
+      "que es la programacion",
+      "quiero aprender a programar"
+    ],
+    "responses": [
+      "Programar es escribir instrucciones para que una computadora realice tareas. Se puede aprender practicando con programas pequeños, leyendo errores y probando cambios."
+    ]
+  },
+  {
+    "intent": "javascript",
+    "patterns": [
+      "que es javascript",
+      "para que sirve javascript",
+      "explica javascript"
+    ],
+    "responses": [
+      "JavaScript es un lenguaje de programación usado para crear páginas web interactivas y aplicaciones. También puede ejecutarse en servidores con Node.js."
+    ]
+  },
+  {
+    "intent": "python",
+    "patterns": [
+      "que es python",
+      "para que sirve python",
+      "explica python"
+    ],
+    "responses": [
+      "Python es un lenguaje de programación conocido por su sintaxis legible. Se utiliza en automatización, análisis de datos, ciencia e inteligencia artificial."
+    ]
+  },
+  {
+    "intent": "nodejs",
+    "patterns": [
+      "que es nodejs",
+      "que es node js",
+      "para que sirve node"
+    ],
+    "responses": [
+      "Node.js permite ejecutar JavaScript fuera del navegador y se usa a menudo para servidores, herramientas y bots."
+    ]
+  },
+  {
+    "intent": "html",
+    "patterns": [
+      "que es html",
+      "para que sirve html"
+    ],
+    "responses": [
+      "HTML define la estructura y el contenido de una página web mediante elementos como títulos, párrafos, enlaces e imágenes."
+    ]
+  },
+  {
+    "intent": "css",
+    "patterns": [
+      "que es css",
+      "para que sirve css"
+    ],
+    "responses": [
+      "CSS controla la presentación visual de páginas web, como colores, tamaños, espacios, animaciones y distribución."
+    ]
+  },
+  {
+    "intent": "git",
+    "patterns": [
+      "que es git",
+      "para que sirve git"
+    ],
+    "responses": [
+      "Git es un sistema de control de versiones que registra cambios en archivos y permite comparar o recuperar versiones del proyecto."
+    ]
+  },
+  {
+    "intent": "github",
+    "patterns": [
+      "que es github",
+      "para que sirve github"
+    ],
+    "responses": [
+      "GitHub es una plataforma para alojar repositorios Git, colaborar en código, revisar cambios y publicar proyectos."
+    ]
+  },
+  {
+    "intent": "npm",
+    "patterns": [
+      "que es npm",
+      "para que sirve npm",
+      "como instalo paquetes"
+    ],
+    "responses": [
+      "npm es el gestor de paquetes habitual de Node.js. Permite instalar dependencias y ejecutar los scripts definidos en package.json."
+    ]
+  },
+  {
+    "intent": "termux",
+    "patterns": [
+      "que es termux",
+      "como programar en android",
+      "puedo usar python en android"
+    ],
+    "responses": [
+      "Termux ofrece una terminal de Linux en Android. Desde allí puedes instalar herramientas como Python, Git y Node.js para ejecutar proyectos compatibles."
+    ]
+  },
+  {
+    "intent": "whatsappbot",
+    "patterns": [
+      "como crear un bot de whatsapp",
+      "que es un bot de whatsapp",
+      "quiero crear un bot"
+    ],
+    "responses": [
+      "Un bot de WhatsApp automatiza tareas mediante una biblioteca compatible y una sesión autorizada. Protege las credenciales y respeta las reglas de la plataforma."
+    ]
+  },
+  {
+    "intent": "baileys",
+    "patterns": [
+      "que es baileys",
+      "para que sirve baileys"
+    ],
+    "responses": [
+      "Baileys es una biblioteca de Node.js que permite conectar aplicaciones con WhatsApp Web. Las versiones y funciones pueden cambiar; consulta la documentación de la versión instalada."
+    ]
+  },
+  {
+    "intent": "errorprogramacion",
+    "patterns": [
+      "como arreglo un error de codigo",
+      "mi codigo falla",
+      "como depurar"
+    ],
+    "responses": [
+      "Para resolver un error, lee el mensaje completo, identifica el archivo y la línea, reproduce el problema y cambia una cosa a la vez. No borres archivos importantes sin copia."
+    ]
+  },
+  {
+    "intent": "npm_install",
+    "patterns": [
+      "como instalar dependencias",
+      "para que sirve npm install"
+    ],
+    "responses": [
+      "Dentro de la carpeta del proyecto, ejecuta npm install para instalar las dependencias declaradas. Revisa los mensajes de error y no ignores fallos de instalación."
+    ]
+  },
+  {
+    "intent": "terminal",
+    "patterns": [
+      "como usar la terminal",
+      "como ejecuto un comando"
+    ],
+    "responses": [
+      "En una terminal, escribe un comando y pulsa Enter. Si aparece un error, copia el texto completo para poder diagnosticarlo."
+    ]
+  },
+  {
+    "intent": "matematicas",
+    "patterns": [
+      "puedes hacer matematicas",
+      "ayudame con matematicas"
+    ],
+    "responses": [
+      "Puedo ayudarte con operaciones básicas si escribes la expresión completa. Para cálculos importantes, verifica el resultado con una herramienta independiente."
+    ]
+  },
+  {
+    "intent": "suma",
+    "patterns": [
+      "como sumar",
+      "cuanto es doce mas ocho",
+      "12 mas 8"
+    ],
+    "responses": [
+      "Para sumar, agrega las cantidades. Por ejemplo, 12 + 8 = 20."
+    ]
+  },
+  {
+    "intent": "resta",
+    "patterns": [
+      "como restar",
+      "cuanto es doce menos ocho"
+    ],
+    "responses": [
+      "Para restar, calcula la diferencia entre las cantidades. Por ejemplo, 12 − 8 = 4."
+    ]
+  },
+  {
+    "intent": "multiplicacion",
+    "patterns": [
+      "que es multiplicar",
+      "cuanto es seis por cuatro"
+    ],
+    "responses": [
+      "La multiplicación representa una suma repetida. Por ejemplo, 6 × 4 = 24."
+    ]
+  },
+  {
+    "intent": "internet",
+    "patterns": [
+      "que es internet",
+      "explica internet"
+    ],
+    "responses": [
+      "Internet es una red mundial de redes que permite intercambiar información y usar servicios como páginas web, correo y mensajería."
+    ]
+  },
+  {
+    "intent": "contraseña",
+    "patterns": [
+      "como proteger mi contraseña",
+      "seguridad de contraseñas"
+    ],
+    "responses": [
+      "Usa contraseñas únicas y largas, activa la autenticación en dos pasos y nunca publiques contraseñas o tokens en repositorios."
+    ]
+  },
+  {
+    "intent": "githubsecret",
+    "patterns": [
+      "puedo subir claves a github",
+      "como proteger secretos",
+      "subi una clave"
+    ],
+    "responses": [
+      "Nunca subas claves API, contraseñas, archivos .env ni credenciales de WhatsApp a GitHub. Si una clave se publica, revócala y genera otra."
+    ]
+  },
+  {
+    "intent": "licencia",
+    "patterns": [
+      "puedo copiar cualquier codigo",
+      "que licencia debo revisar"
+    ],
+    "responses": [
+      "Antes de reutilizar código o datos de terceros, revisa su licencia y atribuye la autoría cuando corresponda. Usa contenido propio o compatible con el proyecto."
+    ]
+  },
+  {
+    "intent": "aprendizaje",
+    "patterns": [
+      "como puedo aprender",
+      "como estudiar mejor"
+    ],
+    "responses": [
+      "Para aprender algo nuevo, divide el objetivo en pasos pequeños, practica con ejemplos y verifica cada resultado antes de avanzar."
+    ]
+  },
+  {
+    "intent": "ia",
+    "patterns": [
+      "que es inteligencia artificial",
+      "que es una ia"
+    ],
+    "responses": [
+      "Una inteligencia artificial es un sistema que realiza tareas como clasificar información o generar texto mediante reglas o modelos entrenados. No todos los sistemas tienen la misma capacidad."
+    ]
+  },
+  {
+    "intent": "entrenamiento",
+    "patterns": [
+      "que es entrenar una ia",
+      "como se entrena un modelo"
+    ],
+    "responses": [
+      "Entrenar un modelo consiste en ajustar sus parámetros con datos para reducir una función de error. La calidad depende de los datos, la arquitectura y la evaluación."
+    ]
+  },
+  {
+    "intent": "modelo_desde_cero",
+    "patterns": [
+      "que significa desde cero",
+      "usas pesos de otras ia",
+      "como entrenas tu modelo"
+    ],
+    "responses": [
+      "Entrenar desde cero significa inicializar los parámetros sin importar pesos preentrenados y aprender únicamente con el conjunto de entrenamiento elegido. Un modelo pequeño necesita datos y evaluación realistas."
+    ]
+  },
+  {
+    "intent": "corpus",
+    "patterns": [
+      "que es un corpus",
+      "para que sirve el corpus"
+    ],
+    "responses": [
+      "Un corpus es un conjunto de textos usado para entrenar o evaluar un sistema lingüístico. Debe ser representativo, de calidad y tener derechos de uso claros."
+    ]
+  },
+  {
+    "intent": "redneuronal",
+    "patterns": [
+      "que es una red neuronal",
+      "explica redes neuronales"
+    ],
+    "responses": [
+      "Una red neuronal es un modelo matemático con parámetros que se ajustan durante el entrenamiento. Una red diminuta puede servir para experimentar, pero no equivale a un asistente grande."
+    ]
+  },
+  {
+    "intent": "datos",
+    "patterns": [
+      "que datos necesito para entrenar",
+      "como mejorar los datos"
+    ],
+    "responses": [
+      "Los datos de entrenamiento deben ser relevantes, limpios y legales. Separa los ejemplos de evaluación para comprobar si el modelo generaliza a preguntas nuevas."
+    ]
+  },
+  {
+    "intent": "respuesta_desconocida",
+    "patterns": [
+      "no sabes la respuesta",
+      "responde algo que no conoces",
+      "que haces si no sabes"
+    ],
+    "responses": [
+      "No encuentro una respuesta suficientemente fiable en mi base local. Puedes agregar una pregunta y una respuesta revisada a data/conocimientos-es.json y ejecutar las pruebas."
+    ]
+  },
+  {
+    "intent": "actualizar",
+    "patterns": [
+      "como actualizar el proyecto",
+      "como actualizo el codigo"
+    ],
+    "responses": [
+      "Para actualizar un proyecto, revisa los cambios, haz una copia o commit antes de modificar archivos y ejecuta las pruebas después de actualizar."
+    ]
+  },
+  {
+    "intent": "pruebas",
+    "patterns": [
+      "que son pruebas automaticas",
+      "como probar mi proyecto"
+    ],
+    "responses": [
+      "Las pruebas automáticas comprueban comportamientos esperados y ayudan a detectar regresiones. Ejecuta las pruebas después de cada cambio importante."
+    ]
+  },
+  {
+    "intent": "ayuda",
+    "patterns": [
+      "ayuda",
+      "necesito ayuda",
+      "puedes ayudarme"
+    ],
+    "responses": [
+      "Claro. Describe qué quieres conseguir y, si aparece un error, comparte el comando y el mensaje completo. No incluyas contraseñas ni claves privadas."
+    ]
+  },
+  {
+    "intent": "ubicacion_ami",
+    "patterns": [
+      "donde estas",
+      "donde sos tu",
+      "donde estás",
+      "donde te encuentras",
+      "en que lugar estas",
+      "estas en internet",
+      "donde vives",
+      "donde funcionas",
+      "donde te ejecutas"
+    ],
+    "responses": [
+      "Estoy funcionando dentro del entorno local donde me instaló Amílcar. Si me ejecutas en BaseBot desde Termux, proceso las preguntas en tu propio teléfono; no vivo en una página web."
+    ]
+  },
+  {
+    "intent": "ubicacion_creador",
+    "patterns": [
+      "donde esta amilcar",
+      "donde vive amilcar",
+      "donde esta mi creador",
+      "donde se encuentra mi creador"
+    ],
+    "responses": [
+      "No conozco la ubicación actual de Amílcar y no debo inventarla. Solo sé que él es el creador de este proyecto."
+    ]
+  },
+  {
+    "intent": "identidad_creador",
+    "patterns": [
+      "quien es tu creador",
+      "quien te creo",
+      "quien te desarrollo",
+      "quien te programo",
+      "quien te hizo",
+      "quien es amilcar"
+    ],
+    "responses": [
+      "Mi creador es Amílcar, quien está desarrollando AMILCAR AI desde cero."
+    ]
+  },
+  {
+    "intent": "funcionamiento_local",
+    "patterns": [
+      "funcionas sin internet",
+      "necesitas internet",
+      "usas una api",
+      "usas api externa",
+      "dependes de una pagina web",
+      "dependes de una ia externa"
+    ],
+    "responses": [
+      "Mi base de conocimientos y el motor experimental funcionan localmente. No necesito una API comercial ni una página web para responder desde esa base. Algunas operaciones como descargar actualizaciones sí pueden necesitar internet."
+    ]
+  },
+  {
+    "intent": "estado_modelo",
+    "patterns": [
+      "ya estas entrenada",
+      "estas entrenado",
+      "tu modelo esta entrenado",
+      "como entrenas",
+      "aprendes de cada mensaje"
+    ],
+    "responses": [
+      "La base de conocimientos local ya puede responder preguntas conocidas. Mi modelo neuronal experimental es independiente y necesita entrenarse y evaluarse por separado. No aprendo automáticamente de cada mensaje; el corpus debe actualizarse de forma revisada y luego entrenarse."
+    ]
+  }
+]

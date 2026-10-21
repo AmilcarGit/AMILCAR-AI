@@ -60,7 +60,7 @@ class AmilcarAI {
       await this._ensureLocal();
       const result = await this._sendLocal({ action: "chat", message: text.trim() }, options.signal);
       if (result.error) throw new AmilcarAIError(result.error, { code: result.code || "LOCAL_INFERENCE_ERROR" });
-      return { reply: result.reply, model: result.model || "AMI-Base", trained: Boolean(result.trained) };
+      return { reply: result.reply, model: result.model || "AMI Nano 2.1", trained: Boolean(result.trained), source: result.source || "model" };
     }
 
     const result = await this._request(this.chatPath, {
