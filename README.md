@@ -112,9 +112,9 @@ Instala el SDK en el proyecto del bot:
 
 Configura la ruta del checkpoint creado en el clon del repositorio. Ajusta la ruta a tu sistema operativo:
 
-    AMILCAR_AI_MODE=local
-    AMILCAR_AI_MODEL_PATH=/ruta/absoluta/AMILCAR-AI/artifacts/ami-base.pt
-    AMILCAR_AI_PYTHON=/ruta/absoluta/AMILCAR-AI/.venv/bin/python
+    export AMILCAR_AI_MODE=local
+    export AMILCAR_AI_MODEL_PATH=/ruta/absoluta/AMILCAR-AI/artifacts/ami-base.pt
+    export AMILCAR_AI_PYTHON=/ruta/absoluta/AMILCAR-AI/.venv/bin/python
 
 Ejemplo JavaScript:
 
