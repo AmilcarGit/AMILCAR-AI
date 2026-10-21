@@ -167,7 +167,6 @@ def generate_llm_candidate(message, timeout=None):
     try:
         timeout = timeout or max(3, int(os.environ.get("AMILCAR_AI_LLM_TIMEOUT", "90")))
         max_tokens = max(32, min(400, int(os.environ.get("AMILCAR_AI_LLM_TOKENS", "180"))))
-        context_size = max(512, min(8192, int(os.environ.get("AMILCAR_AI_LLM_CONTEXT", "2048"))))
     except ValueError:
         return None
 
