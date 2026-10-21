@@ -83,7 +83,7 @@ function scoreEntry(query, entry) {
   return best;
 }
 
-function answer(message) {
+function answer(message, context = {}) {
   if (typeof message !== "string" || !message.trim()) {
     return { reply: "Escríbeme una pregunta o un mensaje para empezar.", intent: "empty", confidence: 1 };
   }
@@ -141,4 +141,23 @@ function hash(value) {
   return result;
 }
 
-module.exports = { answer, normalize, KNOWLEDGE };
+function addKnowledge(entry) {
+  if (!entry || typeof entry !== "object" || typeof entry.id !== "string" || !entry.id.trim()) {
+    throw new TypeError("El conocimiento necesita un id de texto.");
+  }
+  if (!Array.isArray(entry.terms) || entry.terms.length === 0 || entry.terms.some((term) => typeof term !== "string" || !term.trim())) {
+    throw new TypeError("El conocimiento necesita una lista terms con frases no vacías.");
+  }
+  if (typeof entry.answer !== "string" || !entry.answer.trim()) {
+    throw new TypeError("El conocimiento necesita una respuesta de texto no vacía.");
+  }
+  const normalizedId = normalize(entry.id).replace(/\\s+/g, "_");
+  const normalizedTerms = entry.terms.map((term) => term.trim());
+  const existing = KNOWLEDGE.findIndex((item) => item.id === normalizedId);
+  const item = { id: normalizedId, terms: normalizedTerms, answer: entry.answer.trim() };
+  if (existing >= 0) KNOWLEDGE[existing] = item;
+  else KNOWLEDGE.push(item);
+  return { id: normalizedId, terms: normalizedTerms.length };
+}
+
+module.exports = { answer, normalize, KNOWLEDGE, addKnowledge };
