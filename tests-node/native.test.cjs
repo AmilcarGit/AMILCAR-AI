@@ -69,3 +69,28 @@ test("native engine accepts new local knowledge without network access", async (
 test("native engine rejects invalid knowledge entries", () => {
   assert.throws(() => AmilcarNativeEngine.addKnowledge({ id: "invalido", terms: [], answer: "x" }), /terms/);
 });
+
+test("native engine retrieves topics from the editable Spanish knowledge file", async () => {
+  const ia = new NativeAmilcarAI();
+  const solar = await ia.chat("¿Qué planetas forman el sistema solar?");
+  const water = await ia.chat("Explícame el ciclo del agua");
+  const internet = await ia.chat("¿Qué es internet?");
+  assert.equal(solar.intent, "sistema_solar");
+  assert.match(solar.reply, /Mercurio.*Neptuno/);
+  assert.equal(water.intent, "ciclo_del_agua");
+  assert.match(water.reply, /evaporación/i);
+  assert.equal(internet.intent, "internet");
+  assert.match(internet.reply, /TCP\/IP/);
+});
+
+test("native engine normalizes spaces in custom knowledge identifiers", async () => {
+  const ia = new NativeAmilcarAI();
+  ia.addKnowledge({
+    id: "tema personalizado",
+    terms: ["mi tema personalizado"],
+    answer: "Respuesta local personalizada."
+  });
+  const result = await ia.chat("mi tema personalizado");
+  assert.equal(result.intent, "tema_personalizado");
+  assert.equal(result.reply, "Respuesta local personalizada.");
+});
