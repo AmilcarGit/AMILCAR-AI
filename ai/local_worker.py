@@ -34,6 +34,8 @@ def main() -> None:
         request: object = {}
         try:
             request = json.loads(line)
+            if not isinstance(request, dict):
+                raise ValueError("Cada solicitud debe ser un objeto JSON.")
             request_id = request.get("id")
             action = request.get("action", "chat")
 
