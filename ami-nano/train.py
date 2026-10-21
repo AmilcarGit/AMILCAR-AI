@@ -61,7 +61,7 @@ def main():
         rng.shuffle(pairs)
         loss = 0.0
         for prev, target in pairs:
-            probs = softmax(weights[prev])
+            probs = softmax([weights[prev][j] + bias[j] for j in range(n)])
             loss -= math.log(max(probs[target], 1e-12))
             for j in range(n):
                 grad = probs[j] - (1.0 if j == target else 0.0)
