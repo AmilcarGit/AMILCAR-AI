@@ -45,7 +45,8 @@ function scoreEntry(query, entry) {
 function calculateLocally(message) {
   if (typeof message !== "string" || message.length > 120) return null;
   const normalized = message.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().trim();
-  const match = normalized.match(/^(?:(?:cuanto es|calcula|calcular|resuelve|resuelve esto|resultado de)\\s+)?([0-9\\s.+*/^()%-]+)$/);
+  const cleaned = normalized.replace(/^[¿?¡!.,;:]+|[¿?¡!.,;:]+$/g, "").trim();
+  const match = cleaned.match(/^(?:(?:cuanto es|calcula|calcular|resuelve|resuelve esto|resultado de)\\s+)?([0-9\\s.+*/^()%-]+)$/);
   if (!match) return null;
   const expression = match[1].trim();
   if (!/[+*/^()-]/.test(expression) || !/^[0-9\\s.+*/^()-]+$/.test(expression)) return null;
