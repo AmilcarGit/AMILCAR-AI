@@ -149,6 +149,70 @@ def generate_candidate(message, timeout=8):
     return output or None
 
 
+def generate_llm_candidate(message, timeout=None):
+    model_path = os.environ.get("AMILCAR_AI_LLM_MODEL", "").strip()
+    if not model_path or not Path(model_path).is_file():
+        return None
+
+    executable = os.environ.get("AMILCAR_AI_LLM_CLI", "llama-cli").strip() or "llama-cli"
+    import shutil
+    cli_path = shutil.which(executable)
+    if not cli_path:
+        return None
+
+    try:
+        timeout = timeout or max(10, int(os.environ.get("AMILCAR_AI_LLM_TIMEOUT", "90")))
+        max_tokens = max(32, min(400, int(os.environ.get("AMILCAR_AI_LLM_TOKENS", "180"))))
+        context_size = max(512, min(8192, int(os.environ.get("AMILCAR_AI_LLM_CONTEXT", "2048"))))
+    except ValueError:
+        return None
+
+    prompt = (
+        "Responde en español natural y útil. Explica la idea principal con claridad y añade "
+        "un ejemplo breve si ayuda. Si no sabes algo, dilo con honestidad. No inventes fuentes. "
+        "No repitas la pregunta.\nPregunta del usuario: " + " ".join(message.strip().split())
+    )
+    command = [
+        cli_path, "-m", model_path, "-cnv", "--single-turn", "-p", prompt,
+        "-n", str(max_tokens), "-c", str(context_size), "--temp", "0.7",
+        "--simple-io", "--no-display-prompt",
+    ]
+    try:
+        result = subprocess.run(
+            command, cwd=ROOT, env=os.environ.copy(), text=True,
+            capture_output=True, timeout=timeout, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+
+    output = result.stdout.strip()
+    for marker in ("<|im_end|>", "<|endoftext|>", "</s>"):
+        output = output.split(marker, 1)[0].strip()
+    output = re.sub(r"^(?:assistant|asistente)\s*[:：]\s*", "", output, flags=re.IGNORECASE)
+    if output.lower().startswith(prompt.lower()):
+        output = output[len(prompt):].strip()
+    return output or None
+
+
+def evaluate_llm_candidate(candidate):
+    text = candidate.strip()
+    words = re.findall(r"[a-záéíóúüñ]+", text.lower())
+    letters = sum(char.isalpha() for char in text)
+    vowel_count = sum(char.lower() in "aeiouáéíóúü" for char in text)
+    repeated_run = re.search(r"(.)\1{4,}", text.lower()) is not None
+    accepted = (
+        25 <= len(text) <= 1800
+        and len(words) >= 5
+        and len(set(words)) / max(1, len(words)) >= 0.25
+        and letters > 0
+        and vowel_count / max(1, letters) >= 0.20
+        and not repeated_run
+    )
+    return {"accepted": accepted, "word_count": len(words), "source": "local_llm"}
+
+
 def respond(message, dialogs=None, candidate=None):
     if not isinstance(message, str) or not message.strip():
         return {
@@ -194,6 +258,19 @@ def respond(message, dialogs=None, candidate=None):
             "source": "local_composition",
             "quality": {"accepted": True, "knowledge_score": round(retrieved["score"], 3), "intent": item["intent"]},
         }
+
+    llm_candidate = generate_llm_candidate(message)
+    if llm_candidate:
+        llm_quality = evaluate_llm_candidate(llm_candidate)
+        if llm_quality["accepted"]:
+            return {
+                "text": (
+                    f"{llm_candidate}\n\n"
+                    "— Respuesta generada localmente. Puede contener errores; verifica los datos importantes."
+                ),
+                "source": "local_llm",
+                "quality": llm_quality,
+            }
 
     if candidate is None:
         candidate = generate_candidate(message)
