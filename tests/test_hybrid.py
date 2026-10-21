@@ -1,38 +1,38 @@
-import os
+import io
+import json
 import sys
 from pathlib import Path
-from types import SimpleNamespace
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ami-nano"))
 import hybrid
 
 
-def test_generate_llm_candidate_uses_local_llama_cli(tmp_path, monkeypatch):
+def test_generate_llm_candidate_calls_local_server(tmp_path, monkeypatch):
     model = tmp_path / "tiny.gguf"
     model.write_bytes(b"test-model")
     monkeypatch.setenv("AMILCAR_AI_LLM_MODEL", str(model))
-    monkeypatch.setenv("AMILCAR_AI_LLM_CLI", "llama-cli")
-    monkeypatch.setattr(hybrid.shutil, "which", lambda name: "/usr/bin/llama-cli", raising=False)
     answer = "La gravedad describe la atracción entre objetos con masa. Por ejemplo, mantiene la Luna en órbita alrededor de la Tierra."
-    with patch.object(hybrid.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=answer)) as run:
+    body = json.dumps({"choices": [{"message": {"content": answer}}]}).encode("utf-8")
+
+    with patch.object(hybrid.urllib.request, "urlopen", return_value=io.BytesIO(body)) as request:
         result = hybrid.generate_llm_candidate("Explícame la gravedad")
 
     assert result == answer
-    command = run.call_args.args[0]
-    assert command[0] == "/usr/bin/llama-cli"
-    assert str(model) in command
-    assert "-cnv" in command
-    assert run.call_args.kwargs["timeout"] >= 10
+    sent_request = request.call_args.args[0]
+    payload = json.loads(sent_request.data.decode("utf-8"))
+    assert payload["messages"][1]["content"] == "Explícame la gravedad"
+    assert sent_request.full_url == "http://127.0.0.1:8081/v1/chat/completions"
+    assert request.call_args.kwargs["timeout"] >= 3
 
 
 def test_respond_prefers_local_llm_for_unmatched_question(tmp_path, monkeypatch):
     model = tmp_path / "tiny.gguf"
     model.write_bytes(b"test-model")
     monkeypatch.setenv("AMILCAR_AI_LLM_MODEL", str(model))
-    monkeypatch.setattr(hybrid.shutil, "which", lambda name: "/usr/bin/llama-cli", raising=False)
     answer = "La gravedad describe la atracción entre objetos con masa. Por ejemplo, mantiene la Luna en órbita alrededor de la Tierra."
-    with patch.object(hybrid.subprocess, "run", return_value=SimpleNamespace(returncode=0, stdout=answer)):
+    body = json.dumps({"choices": [{"message": {"content": answer}}]}).encode("utf-8")
+    with patch.object(hybrid.urllib.request, "urlopen", return_value=io.BytesIO(body)):
         result = hybrid.respond("Explícame la gravedad cuántica", dialogs=[], candidate="")
 
     assert result["source"] == "local_llm"
@@ -47,6 +47,6 @@ def test_llm_candidate_rejects_empty_or_garbled_text():
 
 def test_llm_is_optional_without_model_path(monkeypatch):
     monkeypatch.delenv("AMILCAR_AI_LLM_MODEL", raising=False)
-    with patch.object(hybrid.subprocess, "run") as run:
+    with patch.object(hybrid.urllib.request, "urlopen") as request:
         assert hybrid.generate_llm_candidate("Hola") is None
-        run.assert_not_called()
+        request.assert_not_called()
