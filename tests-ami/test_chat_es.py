@@ -17,6 +17,10 @@ class SpanishChatTests(unittest.TestCase):
             "¿Quién eres?": "Soy AMI Nano",
             "¿Cómo estás?": "funcionando localmente",
             "¿Necesitas internet?": "localmente",
+            "¿Qué opinas de aprender cosas nuevas?": "ampliar nuestros conocimientos",
+            "¿Dónde sos tú?": "dispositivo donde se ejecuta",
+            "¿Cómo puedo ayudarte a mejorar?": "data/dialogos-es.json",
+            "¿Qué opinas de la inteligencia artificial?": "puede ser útil",
         }
         for question, expected in cases.items():
             with self.subTest(question=question):
