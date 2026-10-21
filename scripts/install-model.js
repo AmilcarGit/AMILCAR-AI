@@ -15,7 +15,7 @@ const MODEL_PATH = path.join(CACHE_DIR, MODEL_NAME);
 
 async function download(url, destination, redirects = 0) {
   if (redirects > 8) throw new Error("Demasiadas redirecciones al descargar el modelo.");
-  const response = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(120000) });
+  const response = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(1200000) });
   if ([301, 302, 303, 307, 308].includes(response.status)) {
     const location = response.headers.get("location");
     if (!location) throw new Error("La descarga devolvió una redirección sin destino.");
