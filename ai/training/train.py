@@ -20,7 +20,7 @@ def train(data_path: Path, output_path: Path, steps: int, seed: int = 42) -> dic
     text = data_path.read_text(encoding="utf-8")
     if len(text) < 100:
         raise ValueError("El corpus debe tener al menos 100 caracteres.")
-    chars = sorted(set(text))
+    chars = sorted(set(text + "Usuario: \nAMILCAR AI:"))
     vocab = {char: index for index, char in enumerate(chars)}
     encoded = torch.tensor([vocab[char] for char in text], dtype=torch.long)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
