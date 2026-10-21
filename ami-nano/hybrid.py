@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """AMI Nano Evolutiva 2.1: recuperación local y composición controlada en español."""
+import json
 import os
 import re
-import shutil
 import subprocess
+import urllib.error
+import urllib.request
 import sys
 from pathlib import Path
 
@@ -155,44 +157,54 @@ def generate_llm_candidate(message, timeout=None):
     if not model_path or not Path(model_path).is_file():
         return None
 
-    executable = os.environ.get("AMILCAR_AI_LLM_CLI", "llama-cli").strip() or "llama-cli"
-    cli_path = shutil.which(executable)
-    if not cli_path:
+    endpoint = os.environ.get(
+        "AMILCAR_AI_LLM_URL",
+        "http://127.0.0.1:8081/v1/chat/completions",
+    ).strip()
+    if not endpoint.startswith(("http://127.0.0.1:", "http://localhost:", "http://[::1]:")):
         return None
 
     try:
-        timeout = timeout or max(10, int(os.environ.get("AMILCAR_AI_LLM_TIMEOUT", "90")))
+        timeout = timeout or max(3, int(os.environ.get("AMILCAR_AI_LLM_TIMEOUT", "90")))
         max_tokens = max(32, min(400, int(os.environ.get("AMILCAR_AI_LLM_TOKENS", "180"))))
         context_size = max(512, min(8192, int(os.environ.get("AMILCAR_AI_LLM_CONTEXT", "2048"))))
     except ValueError:
         return None
 
-    prompt = (
-        "Responde en español natural y útil. Explica la idea principal con claridad y añade "
-        "un ejemplo breve si ayuda. Si no sabes algo, dilo con honestidad. No inventes fuentes. "
-        "No repitas la pregunta.\nPregunta del usuario: " + " ".join(message.strip().split())
+    payload = {
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    "Eres AMILCAR AI. Responde en español natural y útil. Explica la idea principal "
+                    "con claridad y añade un ejemplo breve si ayuda. Si no sabes algo, dilo con "
+                    "honestidad. No inventes fuentes ni repitas la pregunta."
+                ),
+            },
+            {"role": "user", "content": " ".join(message.strip().split())},
+        ],
+        "temperature": 0.7,
+        "max_tokens": max_tokens,
+        "stream": False,
+    }
+    request = urllib.request.Request(
+        endpoint,
+        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+        headers={"Content-Type": "application/json", "Accept": "application/json"},
+        method="POST",
     )
-    command = [
-        cli_path, "-m", model_path, "-cnv", "--single-turn", "-p", prompt,
-        "-n", str(max_tokens), "-c", str(context_size), "--temp", "0.7",
-        "--simple-io", "--no-display-prompt",
-    ]
     try:
-        result = subprocess.run(
-            command, cwd=ROOT, env=os.environ.copy(), text=True,
-            capture_output=True, timeout=timeout, check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired):
-        return None
-    if result.returncode != 0:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            data = json.loads(response.read().decode("utf-8"))
+    except (OSError, TimeoutError, ValueError, urllib.error.URLError):
         return None
 
-    output = result.stdout.strip()
+    try:
+        output = data["choices"][0]["message"]["content"].strip()
+    except (KeyError, IndexError, TypeError, AttributeError):
+        return None
     for marker in ("<|im_end|>", "<|endoftext|>", "</s>"):
         output = output.split(marker, 1)[0].strip()
-    output = re.sub(r"^(?:assistant|asistente)\s*[:：]\s*", "", output, flags=re.IGNORECASE)
-    if output.lower().startswith(prompt.lower()):
-        output = output[len(prompt):].strip()
     return output or None
 
 
