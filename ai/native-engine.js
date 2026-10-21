@@ -44,14 +44,14 @@ function scoreEntry(query, entry) {
 
 function calculateLocally(message) {
   if (typeof message !== "string" || message.length > 120) return null;
-  const normalized = message.normalize("NFD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().trim();
+  const normalized = message.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   const cleaned = normalized.replace(/^[¿?¡!.,;:]+|[¿?¡!.,;:]+$/g, "").trim();
-  const match = cleaned.match(/^(?:(?:cuanto es|calcula|calcular|resuelve|resuelve esto|resultado de)\\s+)?([0-9\\s.+*/^()%-]+)$/);
+  const match = cleaned.match(/^(?:(?:cuanto es|calcula|calcular|resuelve|resuelve esto|resultado de)\s+)?([0-9\s.+*/^()%-]+)$/);
   if (!match) return null;
   const expression = match[1].trim();
-  if (!/[+*/^()-]/.test(expression) || !/^[0-9\\s.+*/^()-]+$/.test(expression)) return null;
-  const tokens = expression.match(/\\d+(?:\\.\\d+)?|[()+*/^-]/g) || [];
-  if (!tokens.length || tokens.join("") !== expression.replace(/\\s+/g, "")) return null;
+  if (!/[+*/^()-]/.test(expression) || !/^[0-9\s.+*/^()-]+$/.test(expression)) return null;
+  const tokens = expression.match(/\d+(?:\.\d+)?|[()+*/^-]/g) || [];
+  if (!tokens.length || tokens.join("") !== expression.replace(/\s+/g, "")) return null;
   let position = 0;
   function parsePrimary() {
     const token = tokens[position++];
@@ -62,7 +62,7 @@ function calculateLocally(message) {
     }
     if (token === "+") return parsePrimary();
     if (token === "-") return -parsePrimary();
-    if (token === undefined || !/^\\d+(?:\\.\\d+)?$/.test(token)) throw new Error("Número no válido");
+    if (token === undefined || !/^\d+(?:\.\d+)?$/.test(token)) throw new Error("Número no válido");
     return Number(token);
   }
   function parsePower() {
