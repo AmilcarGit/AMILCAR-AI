@@ -1,8 +1,10 @@
 "use strict";
 
 const path = require("path");
-const { spawn } = require("child_process");
+const { spawn, execFile } = require("child_process");
+const { promisify } = require("util");
 const readline = require("readline");
+const execFileAsync = promisify(execFile);
 
 class AmilcarAIError extends Error {
   constructor(message, options = {}) {
@@ -18,7 +20,7 @@ class AmilcarAIError extends Error {
 class AmilcarAI {
   constructor(options = {}) {
     this.mode = options.mode || process.env.AMILCAR_AI_MODE || "local";
-    if (!["api", "local"].includes(this.mode)) throw new TypeError("mode debe ser 'api' o 'local'.");
+    if (!["api", "local", "hybrid"].includes(this.mode)) throw new TypeError("mode debe ser 'api', 'local' o 'hybrid'.");
     this.timeout = positiveInteger(options.timeout ?? 30000, "timeout");
     this.maxMessageLength = positiveInteger(options.maxMessageLength ?? 2000, "maxMessageLength");
     this.python = options.python || process.env.AMILCAR_AI_PYTHON || "python";
@@ -42,6 +44,7 @@ class AmilcarAI {
   }
 
   async health(options = {}) {
+    if (this.mode === "hybrid") return { ready: true, model: "AMI-Nano-Hybrid", mode: "hybrid", local: true };
     if (this.mode === "local") {
       await this._ensureLocal();
       return this._sendLocal({ action: "health" }, options.signal);
@@ -55,6 +58,8 @@ class AmilcarAI {
     if (text.length > this.maxMessageLength) {
       throw new AmilcarAIError("El mensaje supera el máximo de " + this.maxMessageLength + " caracteres.", { code: "MESSAGE_TOO_LONG" });
     }
+
+    if (this.mode === "hybrid") return this._chatHybrid(text.trim(), options.signal);
 
     if (this.mode === "local") {
       await this._ensureLocal();
@@ -70,6 +75,26 @@ class AmilcarAI {
     }, options.signal);
     if (typeof result.reply !== "string") throw new AmilcarAIError("La API respondió sin un campo 'reply' válido.", { code: "INVALID_RESPONSE" });
     return { reply: result.reply, model: typeof result.model === "string" ? result.model : "AMILCAR AI", trained: Boolean(result.trained) };
+  }
+
+  async _chatHybrid(message, signal) {
+    if (signal?.aborted) throw new AmilcarAIError("La solicitud fue cancelada.", { code: "ABORTED" });
+    const scriptPath = path.join(__dirname, "ami-nano", "hybrid.py");
+    const timeout = this.timeout;
+    try {
+      const { stdout } = await execFileAsync(this.python, [scriptPath, message], {
+        cwd: __dirname, env: process.env, timeout, maxBuffer: 1024 * 1024, encoding: "utf8", signal
+      });
+      const reply = stdout.trim();
+      if (!reply) throw new AmilcarAIError("El motor híbrido no devolvió texto.", { code: "EMPTY_RESPONSE" });
+      return { reply, model: "AMI-Nano-Hybrid", trained: false, mode: "hybrid" };
+    } catch (cause) {
+      if (cause instanceof AmilcarAIError) throw cause;
+      if (signal?.aborted || cause?.name === "AbortError") throw new AmilcarAIError("La solicitud fue cancelada.", { code: "ABORTED", cause });
+      if (cause?.code === "ETIMEDOUT" || cause?.killed) throw new AmilcarAIError("El motor híbrido superó el tiempo límite de " + timeout + " ms.", { code: "TIMEOUT", cause });
+      if (cause?.code === "ENOENT") throw new AmilcarAIError("No se encontró Python. Instala Python 3 y configura AMILCAR_AI_PYTHON si es necesario.", { code: "PYTHON_START_FAILED", cause });
+      throw new AmilcarAIError("No se pudo ejecutar ami-nano/hybrid.py. Comprueba que el paquete incluya el motor híbrido y sus archivos de conocimiento.", { code: "HYBRID_START_FAILED", cause });
+    }
   }
 
   async generate(message, options = {}) {
