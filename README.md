@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://postimg.cc/phCqXgvP"><img src="assets/amilcar-ai-glow.svg" alt="AMILCAR AI — logo con halo neón" width="260"></a>
+<a href="https://postimg.cc/phCqXgvP"><img src="https://i.postimg.cc/3N569Tb0/file-0000000071c8820e950580dbc623005e.png" alt="AMILCAR AI — logo oficial" width="240"></a>
 
 # AMILCAR AI
 
