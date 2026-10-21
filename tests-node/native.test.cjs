@@ -124,3 +124,27 @@ test("native engine normalizes spaces in custom knowledge identifiers", async ()
   assert.equal(result.intent, "tema_personalizado");
   assert.equal(result.reply, "Respuesta local personalizada.");
 });
+
+test("native engine answers conversation intents from dialogos-es.json", async () => {
+  const ia = new NativeAmilcarAI();
+  for (const [question, intent] of [
+    ["¿Cómo aprendes?", "mejora"],
+    ["quien te creo", "creador"],
+    ["¿Dónde estás?", "ubicacion"],
+    ["¿Usas una API?", "offline"],
+    ["¿Tienes sentimientos?", "emociones_ia"],
+    ["¿Cuál es tu objetivo?", "objetivo"]
+  ]) {
+    const result = await ia.chat(question);
+    assert.equal(result.intent, intent, question);
+    assert.ok(result.reply.length > 10);
+  }
+});
+
+test("conversation intents do not hijack unrelated questions", async () => {
+  const ia = new NativeAmilcarAI();
+  const gravity = await ia.chat("¿Qué es la gravedad y que tal funciona?");
+  assert.equal(gravity.intent, "gravedad");
+  const unknown = await ia.chat("Quien descubrio america en mil cuatrocientos noventa y dos");
+  assert.equal(unknown.intent, "unknown");
+});

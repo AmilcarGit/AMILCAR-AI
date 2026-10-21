@@ -1,6 +1,7 @@
 "use strict";
 
 const KNOWLEDGE = require("../data/knowledge-es.json");
+const DIALOGS = require("../data/dialogos-es.json");
 
 const GREETINGS = [
   "¡Hola! Soy AMILCAR AI. ¿Qué te gustaría consultar?",
@@ -38,6 +39,23 @@ function scoreEntry(query, entry) {
       const queryWords = new Set(query.split(" "));
       const overlap = words.filter((word) => queryWords.has(word)).length;
       best = Math.max(best, overlap / words.length * 0.72);
+    }
+  }
+  return best;
+}
+
+// Las intenciones de conversación (data/dialogos-es.json) solo coinciden si el patrón completo
+// aparece como palabras enteras y ocupa buena parte del mensaje: evita respuestas falsas.
+function scoreDialog(query, entry) {
+  const padded = " " + query + " ";
+  const queryLength = Math.max(1, query.split(" ").length);
+  let best = 0;
+  for (const pattern of Array.isArray(entry.patterns) ? entry.patterns : []) {
+    const candidate = normalize(pattern);
+    if (!candidate) continue;
+    if (query === candidate) return 1;
+    if (padded.includes(" " + candidate + " ")) {
+      best = Math.max(best, Math.min(0.95, candidate.split(" ").length / queryLength));
     }
   }
   return best;
@@ -168,6 +186,22 @@ function answer(message, context = {}) {
       bestScore = score;
     }
   }
+  let bestDialog = null;
+  let bestDialogScore = 0;
+  for (const entry of Array.isArray(context.dialogs) ? context.dialogs : DIALOGS) {
+    const score = scoreDialog(query, entry);
+    if (score > bestDialogScore) {
+      bestDialog = entry;
+      bestDialogScore = score;
+    }
+  }
+  if (bestDialog && bestDialogScore >= 0.55 && bestDialogScore > bestScore && Array.isArray(bestDialog.responses) && bestDialog.responses.length) {
+    return {
+      reply: bestDialog.responses[hash(query) % bestDialog.responses.length],
+      intent: bestDialog.intent,
+      confidence: Number(bestDialogScore.toFixed(2))
+    };
+  }
   if (bestEntry && bestScore >= 0.55) {
     return { reply: bestEntry.answer, intent: bestEntry.id, confidence: Number(bestScore.toFixed(2)) };
   }
@@ -204,4 +238,4 @@ function addKnowledge(entry, knowledge = KNOWLEDGE) {
   return { id: normalizedId, terms: normalizedTerms.length };
 }
 
-module.exports = { answer, normalize, KNOWLEDGE, addKnowledge, calculateLocally };
+module.exports = { answer, normalize, KNOWLEDGE, DIALOGS, addKnowledge, calculateLocally };
