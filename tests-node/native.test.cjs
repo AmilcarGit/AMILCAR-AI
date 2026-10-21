@@ -35,3 +35,37 @@ test("native engine validates empty and oversized messages", async () => {
 test("native engine normalizes Spanish accents", () => {
   assert.equal(AmilcarNativeEngine.normalize("FOTOSÍNTESIS"), "fotosintesis");
 });
+
+test("native engine uses recent topic for simple follow-up questions", async () => {
+  const ia = new NativeAmilcarAI();
+  const first = await ia.chat("¿Qué es la gravedad?");
+  const second = await ia.chat("Dame un ejemplo");
+  assert.equal(first.intent, "gravedad");
+  assert.equal(second.intent, "gravedad");
+  assert.match(second.reply, /Ejemplo:/);
+});
+
+test("native engine stores bounded per-instance history and can clear it", async () => {
+  const ia = new NativeAmilcarAI({ maxHistory: 1 });
+  await ia.chat("Hola");
+  await ia.chat("¿Qué es la fotosíntesis?");
+  assert.equal(ia.getHistory().length, 2);
+  ia.clearHistory();
+  assert.equal(ia.getHistory().length, 0);
+});
+
+test("native engine accepts new local knowledge without network access", async () => {
+  const ia = new NativeAmilcarAI();
+  ia.addKnowledge({
+    id: "mi_tema_local",
+    terms: ["que es mi tema", "mi tema local"],
+    answer: "Este es un conocimiento agregado en la instalación local."
+  });
+  const result = await ia.chat("¿Qué es mi tema?");
+  assert.equal(result.intent, "mi_tema_local");
+  assert.match(result.reply, /instalación local/);
+});
+
+test("native engine rejects invalid knowledge entries", () => {
+  assert.throws(() => AmilcarNativeEngine.addKnowledge({ id: "invalido", terms: [], answer: "x" }), /terms/);
+});
