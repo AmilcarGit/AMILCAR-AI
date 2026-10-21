@@ -12,7 +12,8 @@
   },
   "scripts": {
     "test": "node --test tests-node/*.test.cjs",
-    "check:local": "node scripts/check-local.js"
+    "check:local": "node scripts/check-local.js",
+    "postinstall": "node scripts/install-model.js"
   },
   "keywords": [
     "amilcar-ai",
