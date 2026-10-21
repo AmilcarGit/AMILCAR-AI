@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="360" viewBox="0 0 360 360">
+  <defs>
+    <filter id="neon" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="9" result="blur1"/>
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur2"/>
+      <feMerge><feMergeNode in="blur1"/><feMergeNode in="blur2"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <radialGradient id="halo">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity=".22"/>
+      <stop offset=".58" stop-color="#06b6d4" stop-opacity=".12"/>
+      <stop offset="1" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="360" height="360" fill="url(#halo)"/>
+  <circle cx="180" cy="180" r="132" fill="none" stroke="#8b5cf6" stroke-width="2" opacity=".75" filter="url(#neon)"/>
+  <circle cx="180" cy="180" r="145" fill="none" stroke="#22d3ee" stroke-width="1.5" opacity=".8" stroke-dasharray="7 11" filter="url(#neon)"/>
+  <image href="https://i.postimg.cc/3N569Tb0/file-0000000071c8820e950580dbc623005e.png" x="35" y="35" width="290" height="290" preserveAspectRatio="xMidYMid meet" filter="url(#neon)"/>
+</svg>
