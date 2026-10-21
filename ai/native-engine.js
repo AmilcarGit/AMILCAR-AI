@@ -1,47 +1,6 @@
 "use strict";
 
-const KNOWLEDGE = [
-  {
-    id: "inteligencia_artificial",
-    terms: ["inteligencia artificial", "que es la ia", "que es inteligencia artificial", "como funciona la ia"],
-    answer: "La inteligencia artificial es un área de la informática que crea sistemas capaces de realizar tareas como reconocer patrones, procesar lenguaje y ayudar a resolver problemas. Algunos sistemas siguen reglas y otros aprenden patrones a partir de datos. Sus resultados deben verificarse porque pueden equivocarse."
-  },
-  {
-    id: "amilcar_ai",
-    terms: ["amilcar ai", "amilcar-ai", "quien eres", "que eres", "tu nombre"],
-    answer: "Soy AMILCAR AI, un asistente experimental que funciona localmente con reglas y conocimientos incluidos en el proyecto. No uso una API externa en el modo nativo. Mis capacidades son limitadas y no debo fingir que conozco algo cuando no tengo información suficiente."
-  },
-  {
-    id: "programacion",
-    terms: ["programacion", "programar", "javascript", "node.js", "nodejs", "codigo"],
-    answer: "Para programar, divide el problema en pasos pequeños, implementa una parte, ejecútala y prueba los casos normales y los errores. Si compartes el lenguaje, el código y el error exacto, puedo ayudarte a analizarlo con las capacidades de mi motor local."
-  },
-  {
-    id: "whatsapp_bots",
-    terms: ["bot de whatsapp", "whatsapp bot", "baileys", "bot whatsapp"],
-    answer: "Un bot de WhatsApp recibe eventos de mensajes, aplica sus reglas y decide qué respuesta enviar. Conviene separar la conexión y la sesión de WhatsApp del motor que genera texto. Así cada instalación conserva sus credenciales y AMILCAR AI se ocupa solo de preparar la respuesta."
-  },
-  {
-    id: "aprendizaje",
-    terms: ["como aprender", "aprender", "estudiar", "aprendizaje"],
-    answer: "Una técnica útil para aprender es estudiar una idea, explicarla con tus propias palabras, practicar con un ejemplo y comprobar qué entendiste. Revisa los errores y vuelve a intentarlo después de un intervalo; la práctica activa suele ser más útil que solo releer."
-  },
-  {
-    id: "privacidad",
-    terms: ["privacidad", "datos personales", "seguridad", "mis datos"],
-    answer: "Para proteger tus datos, evita publicar contraseñas, tokens, archivos de sesión o información privada. En el modo nativo de AMILCAR AI, el texto se procesa localmente y no se envía a un proveedor de IA; el bot anfitrión y otras dependencias deben revisarse por separado."
-  },
-  {
-    id: "fotosintesis",
-    terms: ["fotosintesis", "plantas y luz", "como se alimentan las plantas"],
-    answer: "La fotosíntesis permite que las plantas conviertan energía de la luz en energía química. Usan agua y dióxido de carbono para producir azúcares y liberan oxígeno. En las plantas ocurre principalmente en los cloroplastos de sus células."
-  },
-  {
-    id: "gravedad",
-    terms: ["gravedad", "que es la gravedad", "fuerza gravitatoria"],
-    answer: "La gravedad es la interacción por la que los cuerpos con masa se atraen. En la Tierra nos mantiene sobre el suelo y hace que los objetos caigan cuando no hay otra fuerza que los sostenga. También mantiene a los planetas en órbita alrededor del Sol."
-  }
-];
+const KNOWLEDGE = require("../data/knowledge-es.json");
 
 const GREETINGS = [
   "¡Hola! Soy AMILCAR AI. ¿Qué te gustaría consultar?",
@@ -102,7 +61,7 @@ function answer(message, context = {}) {
         whatsapp_bots: "Por ejemplo, el bot recibe un mensaje, llama al motor y envía el texto que este devuelve."
       };
       return {
-        reply: previous.answer + "\\n\\nEjemplo: " + (examples[previousIntent] || "Podemos dividir el tema en partes pequeñas y revisar una por una."),
+        reply: previous.answer + "\n\nEjemplo: " + (examples[previousIntent] || "Podemos dividir el tema en partes pequeñas y revisar una por una."),
         intent: previousIntent,
         confidence: 0.8,
         followUp: true
