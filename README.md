@@ -54,7 +54,7 @@ La meta es que un desarrollador pueda incorporar AMILCAR AI a su propio proyecto
 - Git y conexión a Internet para instalar desde GitHub.
 - Para funciones específicas: Python compatible, dependencias del backend o `llama.cpp`, según el modo elegido.
 
-Instala el SDK en la carpeta de tu proyecto:
+Instala el SDK en la carpeta de tu proyecto. Esta instalación no descarga automáticamente el modelo local:
 
 ```bash
 npm install github:AmilcarGit/AMILCAR-AI
@@ -139,7 +139,7 @@ El modo API utiliza una instancia del backend configurada por el usuario. No es 
 
 ## 📲 Modelo GGUF local en Android / Termux
 
-El paquete incluye un instalador de preparación que intenta descargar un modelo GGUF durante `npm install` y reutilizarlo desde:
+La instalación del paquete es ligera por defecto: `npm install` **no descarga el modelo GGUF**. Si quieres generación con un modelo local, puedes instalarlo manualmente y reutilizarlo desde:
 
 ```text
 ~/.cache/amilcar-ai/models/
@@ -152,7 +152,8 @@ En Termux, el instalador también intenta instalar `llama.cpp` mediante `pkg`. E
 - La descarga requiere conexión a Internet y varios cientos de megabytes libres.
 - Si la descarga falla, la instalación del paquete intenta continuar; eso no significa que la generación GGUF esté lista.
 - La instalación automática del motor puede variar según la plataforma. En sistemas que no sean Termux, instala `llama.cpp` de forma compatible y asegúrate de que `llama-server` esté disponible en el `PATH`.
-- Para omitir la descarga durante la instalación, define `AMILCAR_AI_AUTO_INSTALL_MODEL=0`.
+- Para descargar el modelo local de forma opcional, ejecuta desde la carpeta del bot: `AMILCAR_AI_AUTO_INSTALL_MODEL=1 node node_modules/amilcar-ai/scripts/install-model.js`. Esto descarga aproximadamente 415 MB y puede instalar `llama.cpp` en Termux.
+- La instalación normal no descarga el modelo ni instala `llama.cpp` automáticamente.
 - Mantén el servidor enlazado a `127.0.0.1`; no lo expongas directamente a Internet.
 - El modelo pequeño sirve para experimentar y puede producir respuestas incorrectas, repetitivas o poco profundas.
 
