@@ -15,7 +15,7 @@ def test_generate_llm_candidate_calls_local_server(tmp_path, monkeypatch):
     answer = "La gravedad describe la atracción entre objetos con masa. Por ejemplo, mantiene la Luna en órbita alrededor de la Tierra."
     body = json.dumps({"choices": [{"message": {"content": answer}}]}).encode("utf-8")
 
-    with patch.object(hybrid.urllib.request, "urlopen", return_value=io.BytesIO(body)) as request:
+    with patch.object(hybrid.urllib.request, "urlopen", side_effect=lambda *args, **kwargs: io.BytesIO(body)) as request:
         result = hybrid.generate_llm_candidate("Explícame la gravedad")
 
     assert result == answer
@@ -32,7 +32,7 @@ def test_respond_prefers_local_llm_for_unmatched_question(tmp_path, monkeypatch)
     monkeypatch.setenv("AMILCAR_AI_LLM_MODEL", str(model))
     answer = "La gravedad describe la atracción entre objetos con masa. Por ejemplo, mantiene la Luna en órbita alrededor de la Tierra."
     body = json.dumps({"choices": [{"message": {"content": answer}}]}).encode("utf-8")
-    with patch.object(hybrid.urllib.request, "urlopen", return_value=io.BytesIO(body)):
+    with patch.object(hybrid.urllib.request, "urlopen", side_effect=lambda *args, **kwargs: io.BytesIO(body)):
         result = hybrid.respond("Explícame la gravedad cuántica", dialogs=[], candidate="")
 
     assert result["source"] == "local_llm"
