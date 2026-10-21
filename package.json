@@ -1,0 +1,32 @@
+{
+  "name": "amilcar-ai",
+  "version": "0.2.0",
+  "description": "Cliente Node.js oficial para integrar AMILCAR AI en bots de WhatsApp y aplicaciones Node.js.",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test tests-node/*.test.cjs"
+  },
+  "keywords": [
+    "amilcar-ai",
+    "whatsapp-bot",
+    "baileys",
+    "artificial-intelligence",
+    "sdk"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AmilcarGit/AMILCAR-AI.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AmilcarGit/AMILCAR-AI/issues"
+  },
+  "homepage": "https://github.com/AmilcarGit/AMILCAR-AI#readme"
+}
