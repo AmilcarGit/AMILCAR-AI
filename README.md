@@ -133,6 +133,17 @@ El modo local del motor AMI-Base requiere Python, las dependencias indicadas en 
 
 Consulta [Preparar el motor local](#-ejecutar-el-motor-completo) y comprueba los requisitos antes de seleccionar este modo.
 
+### `native` — motor ligero propio, sin APIs ni descargas de modelos
+
+El modo nativo es un motor determinista escrito en JavaScript, sin dependencias externas ni llamadas de red. Incluye saludos, reconocimiento de algunas intenciones y una pequeña base de conocimientos revisada en español. Se ejecuta en Termux con Node.js 18 o superior y no descarga modelos. **No es todavía un modelo generativo ni puede responder con calidad general comparable a ChatGPT**: cuando no reconoce un tema, lo indica en lugar de inventar. Puedes integrarlo con `const { NativeAmilcarAI } = require("amilcar-ai/native")`.
+
+```js
+const { NativeAmilcarAI } = require("amilcar-ai/native");
+const ia = new NativeAmilcarAI();
+const resultado = await ia.chat("¿Qué es la fotosíntesis?");
+console.log(resultado.reply);
+```
+
 ### `cloud` — modelos de IA por Internet sin descargar modelos
 
 El modo `cloud` usa la API compatible con OpenAI de OpenRouter. Por defecto selecciona `openrouter/free`, que enruta la solicitud a un modelo disponible de la colección gratuita. La disponibilidad, calidad y límites dependen del proveedor; el plan gratuito no garantiza servicio ilimitado ni respuestas siempre correctas.
@@ -239,7 +250,7 @@ npm run dev
 
 | Variable | Propósito |
 | --- | --- |
-| `AMILCAR_AI_MODE` | Selecciona `cloud`, `api`, `local` o `hybrid`. |
+| `AMILCAR_AI_MODE` | Selecciona `cloud`, `api`, `local` o `hybrid`; el motor nativo se importa desde `amilcar-ai/native`. |
 | `AMILCAR_AI_MODEL_PATH` | Ruta al checkpoint de AMI-Base para el motor Python. |
 | `AMILCAR_AI_PYTHON` | Ejecutable de Python que utilizará el motor local. |
 | `AMILCAR_AI_LLM_MODEL` | Ruta opcional a un modelo GGUF. |
@@ -280,6 +291,8 @@ Los flujos de GitHub Actions ejecutan comprobaciones automatizadas. Consulta la 
 - [x] Modo híbrido experimental con conocimiento local.
 - [x] Ejemplo de integración con Baileys.
 - [x] Preparación inicial para descargar un modelo GGUF local.
+- [x] Añadir un motor nativo ligero sin APIs ni descargas de modelos.
+- [ ] Ampliar y evaluar la base de conocimientos del motor nativo.
 - [ ] Validar la instalación automática en diferentes versiones de Termux y Linux.
 - [ ] Mejorar la calidad de generación y ampliar las evaluaciones en español.
 - [ ] Documentar con pruebas los escenarios de instalación, recuperación de errores y uso prolongado.
