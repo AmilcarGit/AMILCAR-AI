@@ -1,12 +1,12 @@
 <div align="center">
 
-<a href="https://postimg.cc/phCqXgvP"><img src="https://i.postimg.cc/3N569Tb0/file-0000000071c8820e950580dbc623005e.png" alt="AMILCAR AI — logo oficial" width="220"></a>
+<a href="https://postimg.cc/phCqXgvP"><img src="assets/amilcar-ai-glow.svg" alt="AMILCAR AI — logo con halo neón" width="260"></a>
 
 # AMILCAR AI
 
-### Inteligencia artificial experimental, abierta y local
+### ✨ Inteligencia artificial experimental, abierta y local ✨
 
-**Un motor de IA diseñado para aprender, experimentar e integrarse con tus proyectos.**
+**💠 Un motor de IA diseñado para aprender, experimentar e integrarse con tus proyectos. 💠**
 
 <p>
   <a href="https://github.com/AmilcarGit/AMILCAR-AI"><img src="https://img.shields.io/badge/GitHub-AMILCAR--AI-181717?style=for-the-badge&logo=github" alt="Repositorio GitHub"></a>
@@ -35,7 +35,7 @@ La meta es que un desarrollador pueda incorporar AMILCAR AI a su propio proyecto
 
 > **Estado del proyecto:** experimental y en desarrollo activo. Las capacidades dependen del modo seleccionado y de los componentes instalados. El modelo AMI-Base entrenado desde cero es experimental; lee las limitaciones antes de usarlo en producción.
 
-## ✨ Características
+## 💫 ✨ Características ✨ 💫
 
 - **SDK para Node.js:** integra el motor desde proyectos JavaScript compatibles con CommonJS.
 - **Modos de ejecución:** `local`, `hybrid` y `api`, según el flujo que necesites.
@@ -78,7 +78,7 @@ async function responder(texto) {
 
 Este ejemplo muestra cómo llamar al SDK; el resultado real depende del motor disponible y de su configuración.
 
-## 🤖 Integración con bots de WhatsApp
+## 🌟 🤖 Integración con bots de WhatsApp 🌟
 
 AMILCAR AI es el componente que genera la respuesta; **no necesita iniciar una sesión de WhatsApp propia**. El bot anfitrión mantiene su autenticación y decide qué mensajes procesar y dónde enviar la respuesta.
 
