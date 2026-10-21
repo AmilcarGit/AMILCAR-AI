@@ -82,6 +82,20 @@ test("native engine accepts new local knowledge without network access", async (
   assert.match(result.reply, /instalación local/);
 });
 
+test("custom knowledge stays isolated between native AI instances", async () => {
+  const first = new NativeAmilcarAI();
+  const second = new NativeAmilcarAI();
+  first.addKnowledge({
+    id: "secreto_local",
+    terms: ["frase exclusiva de prueba"],
+    answer: "Conocimiento privado de esta instancia."
+  });
+  const firstResult = await first.chat("frase exclusiva de prueba");
+  const secondResult = await second.chat("frase exclusiva de prueba");
+  assert.equal(firstResult.intent, "secreto_local");
+  assert.equal(secondResult.intent, "unknown");
+});
+
 test("native engine rejects invalid knowledge entries", () => {
   assert.throws(() => AmilcarNativeEngine.addKnowledge({ id: "invalido", terms: [], answer: "x" }), /terms/);
 });
