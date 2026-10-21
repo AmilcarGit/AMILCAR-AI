@@ -2,6 +2,7 @@
 """AMI Nano Evolutiva 2.1: recuperación local y composición controlada en español."""
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -155,7 +156,6 @@ def generate_llm_candidate(message, timeout=None):
         return None
 
     executable = os.environ.get("AMILCAR_AI_LLM_CLI", "llama-cli").strip() or "llama-cli"
-    import shutil
     cli_path = shutil.which(executable)
     if not cli_path:
         return None
