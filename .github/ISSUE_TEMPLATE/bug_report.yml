@@ -1,0 +1,38 @@
+name: Reportar un error
+description: Reporta un fallo reproducible sin incluir datos privados.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Busca primero si el problema ya existe. No compartas tokens, sesiones, números privados ni archivos de configuración sensibles."
+  - type: textarea
+    id: summary
+    attributes:
+      label: Descripción del problema
+      description: ¿Qué ocurre y qué esperabas que ocurriera?
+      placeholder: Describe el comportamiento observado.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Pasos para reproducirlo
+      placeholder: "1. Ejecuta ...\n2. Usa ...\n3. Observa ..."
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Entorno
+      description: Sistema operativo, versión de Node.js y forma de instalación.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Registro de error redactado
+      description: Elimina tokens, teléfonos, identificadores de sesión y otros datos privados.
+      render: text
+    validations:
+      required: false
