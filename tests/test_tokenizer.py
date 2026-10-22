@@ -62,3 +62,11 @@ def test_invalid_inputs_raise_clear_errors() -> None:
         BPETokenizer.from_dict({"type": "otro"})
     with pytest.raises(ValueError):
         BPETokenizer(merges=[(0, 999)])
+
+
+def test_roundtrip_is_lossless_for_underscores_and_odd_characters() -> None:
+    tokenizer = BPETokenizer.train(CORPUS, vocab_size=300)
+    samples = ["snake_case", "__init__", "a_b_c", "x² y³", "tab\tsalto\r\nfin", "\u0301suelto", "ｆｕｌｌ"]
+    samples.append("".join(chr(code) for code in range(32, 127)))
+    for text in samples:
+        assert tokenizer.decode(tokenizer.encode(text)) == text, repr(text)

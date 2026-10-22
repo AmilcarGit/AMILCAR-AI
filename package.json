@@ -5,7 +5,8 @@
   "main": "./index.js",
   "exports": {
     ".": "./index.js",
-    "./native": "./native.js"
+    "./native": "./native.js",
+    "./neural": "./neural.js"
   },
   "type": "commonjs",
   "engines": {

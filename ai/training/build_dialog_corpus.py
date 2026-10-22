@@ -5,6 +5,8 @@ Cada ejemplo usa el mismo formato con el que el modelo responde después:
     Usuario: hola
     AMILCAR AI: ¡Hola! ...
 
+Las preguntas se guardan normalizadas (minúsculas, sin tildes ni signos), igual que las recibe el modelo.
+
 Uso:
     python -m ai.training.build_dialog_corpus --output data/dialogos_train.txt
     python -m ai.training.train --data data/dialogos_train.txt --steps 3000
@@ -13,6 +15,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -21,13 +25,23 @@ DEFAULT_KNOWLEDGE = ROOT / "data" / "knowledge-es.json"
 DEFAULT_OUTPUT = ROOT / "data" / "dialogos_train.txt"
 
 
+_NON_TEXT = re.compile(r"[^a-z0-9ñ\s]")
+
+
+def normalize_question(text: str) -> str:
+    """Misma normalización que `normalize()` de ai/native-engine.js.
+
+    Minúsculas, sin tildes (ni la tilde de la ñ), sin signos y con espacios simples. El bot aplica
+    esto al mensaje antes de pasárselo al modelo, así que se entrena con exactamente esa forma.
+    """
+    decomposed = unicodedata.normalize("NFD", str(text))
+    stripped = "".join(ch for ch in decomposed if not "\u0300" <= ch <= "\u036f")
+    return " ".join(_NON_TEXT.sub(" ", stripped.lower()).split())
+
+
 def _variants(question: str) -> list[str]:
-    """Forma original y con mayúscula inicial: así el modelo ve cómo escribe la gente."""
-    question = " ".join(question.split())
-    if not question:
-        return []
-    capitalized = question[0].upper() + question[1:]
-    return [question] if capitalized == question else [question, capitalized]
+    normalized = normalize_question(question)
+    return [normalized] if normalized else []
 
 
 def _pairs(dialogs: list[dict], knowledge: list[dict]) -> list[tuple[str, str]]:

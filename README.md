@@ -43,6 +43,7 @@ Esta es la estructura funcional principal del repositorio y la organización obj
 AMILCAR-AI/
 ├── ai/
 │   ├── native-engine.js       # Motor nativo ligero en JavaScript
+│   ├── neural-engine.js       # Transformer + tokenizador BPE en JavaScript puro
 │   └── training/              # Entrenamiento experimental en Python
 ├── apps/
 │   ├── api/                   # Backend HTTP opcional
@@ -56,7 +57,10 @@ AMILCAR-AI/
 │   └── install-model.js       # Instalación opcional del modelo GGUF
 ├── tests-node/
 │   └── native.test.cjs        # Pruebas del motor nativo
+├── models/
+│   └── ami-base.amw           # Modelo entrenado (lo genera el workflow de entrenamiento)
 ├── ami-nano/                  # Experimentos locales de texto/modelo
+├── neural.js                  # SDK NeuralAmilcarAI (modelo propio en JavaScript)
 ├── native.js                 # SDK NativeAmilcarAI
 ├── index.js                  # SDK principal
 ├── package.json
@@ -189,6 +193,34 @@ const ia = new NativeAmilcarAI();
 const resultado = await ia.chat("¿Qué es la fotosíntesis?");
 console.log(resultado.reply);
 ```
+
+### `neural` — tu propio modelo (AMI-Base) generando cada respuesta, sin Python
+
+Es la red neuronal entrenada desde cero (`ai/model/transformer.py`) ejecutada en **JavaScript puro**: sin Python, sin PyTorch, sin APIs ni Internet, así que corre en Termux. Genera cada respuesta token por token; no busca coincidencias.
+
+```js
+const { NeuralAmilcarAI } = require("amilcar-ai/neural");
+const ia = new NeuralAmilcarAI();            // lee models/ami-base.amw
+if (ia.isAvailable()) {
+  const r = await ia.chat("¿Quién te creó?");
+  console.log(r.reply, r.confidence);        // confidence: 0 a 1, qué tan seguro está el propio modelo
+}
+```
+
+**Cómo se entrena (no hace falta tu teléfono):** el workflow `Entrenar AMI-Base` (`.github/workflows/train-model.yml`) entrena el modelo en los servidores de GitHub con `data/dialogos-es.json` y `data/knowledge-es.json`, lo exporta a `models/ami-base.amw` y lo guarda en el repositorio junto con un informe (`models/ami-base.report.md`). Se lanza solo cada vez que cambian esos datos o el código del modelo, y a mano desde *Actions → Entrenar AMI-Base → Run workflow*. Después basta con `git pull` o `npm install github:AmilcarGit/AMILCAR-AI`.
+
+Para entrenar en tu PC o en Colab:
+
+```bash
+python -m ai.training.build_dialog_corpus --output artifacts/dialogos_train.txt
+python -m ai.training.train --data artifacts/dialogos_train.txt --vocab-size 1000 --steps 3000 --val-fraction 0
+python -m ai.training.export_model --checkpoint artifacts/ami-base.pt --output models/ami-base.amw
+node scripts/evaluate-neural.js
+```
+
+**Qué esperar:** con unos cientos de ejemplos el modelo aprende muy bien lo que está en los datos, entiende algunas reformulaciones y **no sabe lo que no vio**: ante temas nuevos improvisa, y por eso devuelve `confidence` (el bot la usa para volver al motor `native` cuando duda). Para que sepa más hay que darle más ejemplos; el tamaño del modelo no sustituye a los datos. El informe `ami-base.report.md` muestra cómo responde a preguntas conocidas, reformuladas y ajenas.
+
+Los pesos (`.amw`) se leen en `ai/neural-engine.js`, que comparte tokenizador y arquitectura con el entrenamiento; las pruebas comparan su salida con una referencia independiente en numpy y, en el CI, con PyTorch.
 
 ### `cloud` — modelos de IA por Internet sin descargar modelos
 
@@ -390,6 +422,7 @@ Los flujos de GitHub Actions ejecutan comprobaciones automatizadas. Consulta la 
 - [x] Transformer propio con RMSNorm, RoPE, atención causal y KV cache.
 - [x] Entrenamiento con validación, perplexity y scheduler de learning rate.
 - [x] Muestreo con top-k y top-p en la generación.
+- [x] Motor neuronal en JavaScript puro (sin Python) y entrenamiento automático en GitHub Actions.
 - [ ] Reunir un corpus grande en español con licencia verificada.
 - [ ] Ampliar y evaluar la base de conocimientos del motor nativo.
 - [ ] Validar la instalación automática en diferentes versiones de Termux y Linux.

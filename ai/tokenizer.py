@@ -12,7 +12,9 @@ from pathlib import Path
 from typing import Iterable
 
 # Separa el texto en palabras (con su espacio inicial), números, signos y espacios.
-PRETOKEN_PATTERN = re.compile(r"\s?[^\W\d_]+|\s?\d+|\s?[^\s\w]+|\s+", re.UNICODE)
+# Letras, números, símbolos (incluido "_") y espacios. La última alternativa recoge cualquier
+# carácter restante, así que codificar nunca pierde texto.
+PRETOKEN_PATTERN = re.compile(r"\s?[^\W\d_]+|\s?\d+|\s?(?:[^\s\w]|_)+|\s+|(?s:.)", re.UNICODE)
 PAD_TOKEN = "<|pad|>"
 EOS_TOKEN = "<|endoftext|>"
 DEFAULT_SPECIAL_TOKENS = (PAD_TOKEN, EOS_TOKEN)

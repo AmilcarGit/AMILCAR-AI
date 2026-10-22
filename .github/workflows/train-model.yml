@@ -1,0 +1,72 @@
+name: Entrenar AMI-Base
+
+# Entrena el modelo en los servidores de GitHub (no hace falta PyTorch en tu teléfono), lo exporta al
+# formato .amw que ejecuta el motor de JavaScript y lo guarda en models/ dentro del repositorio.
+# Se lanza solo cuando cambian los datos de conversación o el código del modelo, y también a mano
+# desde la pestaña Actions > Entrenar AMI-Base > Run workflow.
+on:
+  push:
+    branches: [main]
+    paths:
+      - data/dialogos-es.json
+      - data/knowledge-es.json
+      - ai/model/**
+      - ai/tokenizer.py
+      - ai/training/**
+      - scripts/evaluate-neural.js
+      - .github/workflows/train-model.yml
+  workflow_dispatch:
+    inputs:
+      steps:
+        description: "Pasos de entrenamiento"
+        default: "3000"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: train-model
+  cancel-in-progress: true
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Instalar PyTorch (CPU)
+        run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Construir el corpus de conversación
+        run: python -m ai.training.build_dialog_corpus --output artifacts/dialogos_train.txt
+      - name: Entrenar
+        run: >
+          python -m ai.training.train
+          --data artifacts/dialogos_train.txt --output artifacts/ami-base.pt
+          --vocab-size 1000 --d-model 128 --n-heads 4 --n-layers 4
+          --max-seq-len 256 --block-size 128 --batch-size 16
+          --lr 6e-4 --val-fraction 0 --steps ${{ github.event.inputs.steps || '3000' }}
+      - name: Exportar a .amw
+        run: python -m ai.training.export_model --checkpoint artifacts/ami-base.pt --output models/ami-base.amw
+      - name: Evaluar con el motor de JavaScript
+        run: node scripts/evaluate-neural.js --model models/ami-base.amw --out models/ami-base.report.md
+      - name: Publicar el modelo en main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add models/ami-base.amw models/ami-base.report.md
+          if git diff --cached --quiet; then
+            echo "El modelo no cambió."
+            exit 0
+          fi
+          git commit -m "Reentrena AMI-Base [skip ci]"
+          for intento in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep 5
+          done
+          exit 1

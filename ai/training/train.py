@@ -59,6 +59,7 @@ def train(
     lr: float = 3e-4,
     warmup_steps: int | None = None,
     eval_batches: int = 8,
+    val_fraction: float = 0.05,
 ) -> dict[str, float]:
     if steps < 1:
         raise ValueError("steps debe ser mayor que cero.")
@@ -97,11 +98,11 @@ def train(
     if val_path is not None:
         train_ids = ids
         val_ids = torch.tensor(tokenizer.encode(val_path.read_text(encoding="utf-8")), dtype=torch.long)
-    elif len(ids) >= 200:
-        held_out = max(32, len(ids) // 20)  # el 5 % final se reserva para validar
+    elif val_fraction > 0 and len(ids) >= 200:
+        held_out = max(32, int(len(ids) * val_fraction))  # el final del corpus se reserva para validar
         train_ids, val_ids = ids[:-held_out], ids[-held_out:]
     else:
-        train_ids = val_ids = ids  # corpus diminuto: se valida sobre el mismo texto
+        train_ids = val_ids = ids  # val_fraction=0 o corpus diminuto: se valida sobre el mismo texto
     if len(train_ids) < 10:
         raise ValueError("El corpus tiene muy pocos tokens para entrenar.")
 
@@ -183,11 +184,13 @@ def main() -> None:
     parser.add_argument("--block-size", type=int, default=128)
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--lr", type=float, default=3e-4)
+    parser.add_argument("--val-fraction", type=float, default=0.05,
+                        help="Parte final del corpus reservada para validar; 0 = entrenar con todo (validación sobre lo mismo).")
     args = parser.parse_args()
     metrics = train(
         args.data, args.output, args.steps, args.seed, args.resume, args.val,
         args.vocab_size, args.d_model, args.n_heads, args.n_layers,
-        args.max_seq_len, args.block_size, args.batch_size, args.lr,
+        args.max_seq_len, args.block_size, args.batch_size, args.lr, val_fraction=args.val_fraction,
     )
     print(f"Checkpoint guardado en: {args.output}")
     print(
