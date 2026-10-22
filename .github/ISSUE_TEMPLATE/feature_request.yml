@@ -1,0 +1,34 @@
+name: Proponer una mejora
+description: Propón una función nueva o una mejora concreta.
+title: "[Mejora]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema o necesidad
+      description: ¿Qué quieres resolver?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solución propuesta
+      description: Describe cómo debería funcionar.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmación
+      options:
+        - label: Busqué si ya existe una propuesta similar.
+          required: true
+        - label: Entiendo que la propuesta puede requerir revisión antes de aceptarse.
+          required: true
