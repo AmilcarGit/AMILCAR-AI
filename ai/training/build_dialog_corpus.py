@@ -22,6 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DIALOGS = ROOT / "data" / "dialogos-es.json"
 DEFAULT_KNOWLEDGE = ROOT / "data" / "knowledge-es.json"
+DEFAULT_OFFTOPIC = ROOT / "data" / "fuera-de-tema-es.json"
 DEFAULT_OUTPUT = ROOT / "data" / "dialogos_train.txt"
 
 
@@ -44,7 +45,7 @@ def _variants(question: str) -> list[str]:
     return [normalized] if normalized else []
 
 
-def _pairs(dialogs: list[dict], knowledge: list[dict]) -> list[tuple[str, str]]:
+def _pairs(dialogs: list[dict], knowledge: list[dict], offtopic: dict | None = None) -> list[tuple[str, str]]:
     pairs: list[tuple[str, str]] = []
     for item in dialogs:
         patterns = item.get("patterns", [])
@@ -61,14 +62,21 @@ def _pairs(dialogs: list[dict], knowledge: list[dict]) -> list[tuple[str, str]]:
             for question in _variants(str(term)):
                 if answer:
                     pairs.append((question, answer))
+    if offtopic:
+        # Preguntas ajenas al proyecto con una respuesta única de "no sé": así el modelo aprende a no improvisar.
+        answer = " ".join(str(offtopic.get("respuesta", "")).split())
+        for question in offtopic.get("preguntas", []):
+            for variant in _variants(str(question)):
+                if answer:
+                    pairs.append((variant, answer))
     return pairs
 
 
-def build_corpus(dialogs: list[dict], knowledge: list[dict] | None = None) -> str:
+def build_corpus(dialogs: list[dict], knowledge: list[dict] | None = None, offtopic: dict | None = None) -> str:
     """Devuelve el texto de entrenamiento. Sin duplicados y en orden estable."""
     seen: set[tuple[str, str]] = set()
     blocks: list[str] = []
-    for question, answer in _pairs(dialogs, knowledge or []):
+    for question, answer in _pairs(dialogs, knowledge or [], offtopic):
         if (question, answer) in seen:
             continue
         seen.add((question, answer))
@@ -82,11 +90,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Genera un corpus de conversación para entrenar AMI-Base.")
     parser.add_argument("--dialogs", type=Path, default=DEFAULT_DIALOGS)
     parser.add_argument("--knowledge", type=Path, default=DEFAULT_KNOWLEDGE)
+    parser.add_argument("--offtopic", type=Path, default=DEFAULT_OFFTOPIC, help="Preguntas fuera de tema con respuesta de no sé (opcional).")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     args = parser.parse_args()
     dialogs = json.loads(args.dialogs.read_text(encoding="utf-8"))
     knowledge = json.loads(args.knowledge.read_text(encoding="utf-8")) if args.knowledge.is_file() else []
-    corpus = build_corpus(dialogs, knowledge)
+    offtopic = json.loads(args.offtopic.read_text(encoding="utf-8")) if args.offtopic.is_file() else None
+    corpus = build_corpus(dialogs, knowledge, offtopic)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(corpus, encoding="utf-8")
     print(f"{corpus.count('Usuario: ')} ejemplos, {len(corpus)} caracteres -> {args.output}")

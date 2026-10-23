@@ -420,11 +420,14 @@ function logProbability(logits, index) {
 }
 
 const STOP_PATTERN = /\n\s*\n|\nUsuario:/;
+// Los primeros tokens son los que deciden QUÉ se responde; el resto del texto es casi determinista.
+const DECISION_TOKENS = 5;
 
 /**
  * Genera la respuesta a `prompt` (el texto ya con formato "Usuario: ...\nAMILCAR AI:").
- * Devuelve { text, confidence, tokens }. `confidence` es la probabilidad media geométrica de los
- * tokens elegidos según el propio modelo (0 a 1): baja cuando el modelo "improvisa".
+ * Devuelve { text, confidence, meanConfidence, tokens }. `confidence` es la probabilidad más baja entre los
+ * primeros tokens elegidos (los que deciden qué se responde; 0 a 1): baja cuando el modelo no reconoce la
+ * pregunta. `meanConfidence` es la media geométrica de todos los tokens (se queda alta en textos memorizados).
  */
 function generate(model, prompt, options = {}) {
   const tokenizer = model.tokenizer;
@@ -452,13 +455,16 @@ function generate(model, prompt, options = {}) {
 
   let logits = prefill(context);
   let logSum = 0;
+  let decisionMin = 1;
   let text = "";
   for (let n = 0; n < maxNewTokens; n += 1) {
     const scores = Float32Array.from(logits);
     if (tokenizer.padId !== null) scores[tokenizer.padId] = -Infinity;
     const token = sampleFromLogits(scores, sampling);
     if (token === tokenizer.eosId) break;
-    logSum += logProbability(scores, token);
+    const logp = logProbability(scores, token);
+    logSum += logp;
+    if (generated.length < DECISION_TOKENS) decisionMin = Math.min(decisionMin, Math.exp(logp));
     generated.push(token);
     allIds.push(token);
     text = tokenizer.decode(generated);
@@ -471,8 +477,8 @@ function generate(model, prompt, options = {}) {
     }
   }
   const answer = text.split(STOP_PATTERN)[0].trim();
-  const confidence = generated.length ? Math.exp(logSum / generated.length) : 0;
-  return { text: answer, confidence, tokens: generated.length };
+  const meanConfidence = generated.length ? Math.exp(logSum / generated.length) : 0;
+  return { text: answer, confidence: generated.length ? decisionMin : 0, meanConfidence, tokens: generated.length };
 }
 
 module.exports = {

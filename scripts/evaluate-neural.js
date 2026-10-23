@@ -85,46 +85,52 @@ async function evaluate(modelPath) {
   const known = [];
   for (const [question, expected] of pairs) {
     const result = await ia.chat(question);
-    known.push({ question, expected: squash(expected), reply: squash(result.reply), confidence: result.confidence, exact: squash(result.reply) === squash(expected) });
+    known.push({ question, expected: squash(expected), reply: squash(result.reply), confidence: result.confidence, intent: result.intent, exact: squash(result.reply) === squash(expected) });
   }
   const run = async (questions) => {
     const rows = [];
     for (const question of questions) {
       const result = await ia.chat(question);
-      rows.push({ question, reply: squash(result.reply), confidence: result.confidence });
+      rows.push({ question, reply: squash(result.reply), confidence: result.confidence, intent: result.intent, refused: result.intent === "unknown" });
     }
     return rows;
   };
   const paraphrases = await run(PARAPHRASES);
   const unrelated = await run(UNRELATED);
 
-  const goodConfidences = known.filter((row) => row.exact).map((row) => row.confidence);
-  const unrelatedConfidences = unrelated.map((row) => row.confidence);
-  const lowestGood = goodConfidences.length ? Math.min(...goodConfidences) : 0;
-  const highestUnrelated = unrelatedConfidences.length ? Math.max(...unrelatedConfidences) : 0;
-  const suggested = Number(((lowestGood + highestUnrelated) / 2).toFixed(2));
-  return { health, known, paraphrases, unrelated, lowestGood, highestUnrelated, suggested };
+  // El umbral solo importa para respuestas que el modelo NO rechazó: separa reformulaciones válidas de
+  // preguntas ajenas que contestó igualmente.
+  const acceptedParaphrases = paraphrases.filter((row) => !row.refused).map((row) => row.confidence);
+  const acceptedUnrelated = unrelated.filter((row) => !row.refused).map((row) => row.confidence);
+  const lowestParaphrase = acceptedParaphrases.length ? Math.min(...acceptedParaphrases) : 1;
+  const highestUnrelated = acceptedUnrelated.length ? Math.max(...acceptedUnrelated) : 0;
+  const separable = lowestParaphrase > highestUnrelated;
+  const suggested = separable ? Number(((lowestParaphrase + highestUnrelated) / 2).toFixed(2)) : 0.5;
+  const lowestGood = Math.min(1, ...known.filter((row) => row.exact).map((row) => row.confidence));
+  return { health, known, paraphrases, unrelated, lowestGood, highestUnrelated, lowestParaphrase, separable, suggested };
 }
 
 function report(result, modelPath) {
   const exact = result.known.filter((row) => row.exact).length;
   const lines = [];
   lines.push("# Informe de evaluación de AMI-Base (motor JavaScript)", "");
+  const refusedKnown = result.known.filter((row) => row.intent === "unknown").length;
+  const refusedUnrelated = result.unrelated.filter((row) => row.refused).length;
+  const refusedParaphrases = result.paraphrases.filter((row) => row.refused).length;
   lines.push(`- Modelo: \`${path.basename(modelPath)}\``);
-  lines.push(`- Preguntas conocidas con respuesta exacta: **${exact} de ${result.known.length}** (${((100 * exact) / Math.max(1, result.known.length)).toFixed(1)} %)`);
-  lines.push(`- Confianza media en conocidas: ${mean(result.known.map((r) => r.confidence)).toFixed(3)}`);
+  lines.push(`- Preguntas conocidas con respuesta exacta: **${exact} de ${result.known.length}** (${((100 * exact) / Math.max(1, result.known.length)).toFixed(1)} %); rechazadas por error: ${refusedKnown}`);
   lines.push(`- Confianza mínima entre las respuestas exactas: ${result.lowestGood.toFixed(3)}`);
-  lines.push(`- Confianza media en reformuladas: ${mean(result.paraphrases.map((r) => r.confidence)).toFixed(3)}`);
-  lines.push(`- Confianza media en preguntas ajenas al tema: ${mean(result.unrelated.map((r) => r.confidence)).toFixed(3)} (máxima ${result.highestUnrelated.toFixed(3)})`);
-  lines.push(`- **Umbral de confianza sugerido: ${result.suggested}**`, "");
+  lines.push(`- Reformuladas: ${result.paraphrases.length - refusedParaphrases} contestadas y ${refusedParaphrases} rechazadas (confianza mínima de las contestadas: ${result.lowestParaphrase.toFixed(3)})`);
+  lines.push(`- Preguntas ajenas al tema: **${refusedUnrelated} de ${result.unrelated.length} rechazadas correctamente** (de las contestadas, confianza máxima ${result.highestUnrelated.toFixed(3)})`);
+  lines.push(`- **Umbral de confianza sugerido: ${result.suggested}**${result.separable ? "" : " (las contestadas no se separan por confianza; se usa el valor por defecto)"}`, "");
 
   const table = (title, rows) => {
     lines.push(`## ${title}`, "", "| Pregunta | Confianza | Respuesta |", "|---|---|---|");
-    for (const row of rows) lines.push(`| ${cut(row.question, 50)} | ${row.confidence.toFixed(3)} | ${cut(row.reply)} |`);
+    for (const row of rows) lines.push(`| ${cut(row.question, 50)} | ${row.confidence.toFixed(3)} | ${row.refused ? "🚫 " : ""}${cut(row.reply)} |`);
     lines.push("");
   };
   table("Preguntas reformuladas", result.paraphrases);
-  table("Preguntas ajenas al tema (lo ideal: confianza baja)", result.unrelated);
+  table("Preguntas ajenas al tema (lo ideal: 🚫 rechazadas)", result.unrelated);
   const failures = result.known.filter((row) => !row.exact).slice(0, 15);
   if (failures.length) {
     lines.push("## Preguntas conocidas que no reprodujo exactamente (primeras 15)", "", "| Pregunta | Confianza | Respuesta del modelo |", "|---|---|---|");
@@ -150,4 +156,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { evaluate, report, trainingPairs };
+module.exports = { evaluate, report, trainingPairs, PARAPHRASES, UNRELATED };

@@ -7,6 +7,18 @@ const { normalize } = require("./ai/native-engine.js");
 
 const DEFAULT_MODEL_PATH = path.join(__dirname, "models", "ami-base.amw");
 
+const squash = (text) => String(text).replace(/\s+/g, " ").trim();
+
+// Respuesta de "no sé" con la que se entrena el modelo (data/fuera-de-tema-es.json).
+function loadRefusal() {
+  try {
+    return squash(require("./data/fuera-de-tema-es.json").respuesta || "");
+  } catch {
+    return "";
+  }
+}
+const REFUSAL = loadRefusal();
+
 function fail(message, code) {
   const error = new Error(message);
   error.name = "AmilcarAIError";
@@ -87,8 +99,10 @@ class NeuralAmilcarAI {
       model: "AMI-Base-Neural",
       trained: true,
       mode: "neural",
-      intent: "neural",
+      // Si el modelo aprendió a decir que no sabe, se marca como "unknown", igual que el motor nativo.
+      intent: REFUSAL && squash(result.text).startsWith(REFUSAL.slice(0, 60)) ? "unknown" : "neural",
       confidence: Number(result.confidence.toFixed(4)),
+      meanConfidence: Number(result.meanConfidence.toFixed(4)),
       tokens: result.tokens
     };
   }

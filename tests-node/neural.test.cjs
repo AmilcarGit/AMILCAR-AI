@@ -129,3 +129,18 @@ test("el script de evaluación genera un informe con el modelo de prueba", () =>
   assert.match(text, /Informe de evaluación de AMI-Base/);
   assert.match(text, /Umbral de confianza sugerido/);
 });
+
+test("las preguntas de la evaluación no están en los datos de entrenamiento (la evaluación es honesta)", () => {
+  const { PARAPHRASES, UNRELATED, trainingPairs } = require("../scripts/evaluate-neural.js");
+  const { normalize } = require("../ai/native-engine.js");
+  const offtopic = require("../data/fuera-de-tema-es.json");
+  const trained = new Set([...trainingPairs().map(([question]) => question), ...offtopic.preguntas.map(normalize)]);
+  for (const question of [...PARAPHRASES, ...UNRELATED]) assert.ok(!trained.has(normalize(question)), question);
+});
+
+test("la confianza se mide en los primeros tokens y la media queda aparte", async () => {
+  const ia = new NeuralAmilcarAI({ modelPath: MODEL, maxNewTokens: 30 });
+  const r = await ia.chat("hola", { seed: 1, temperature: 1 });
+  assert.ok(r.confidence >= 0 && r.confidence <= 1);
+  assert.ok(r.meanConfidence >= 0 && r.meanConfidence <= 1);
+});

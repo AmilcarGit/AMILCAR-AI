@@ -10,6 +10,7 @@ on:
     paths:
       - data/dialogos-es.json
       - data/knowledge-es.json
+      - data/fuera-de-tema-es.json
       - ai/model/**
       - ai/tokenizer.py
       - ai/training/**

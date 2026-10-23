@@ -218,7 +218,9 @@ python -m ai.training.export_model --checkpoint artifacts/ami-base.pt --output m
 node scripts/evaluate-neural.js
 ```
 
-**Qué esperar:** con unos cientos de ejemplos el modelo aprende muy bien lo que está en los datos, entiende algunas reformulaciones y **no sabe lo que no vio**: ante temas nuevos improvisa, y por eso devuelve `confidence` (el bot la usa para volver al motor `native` cuando duda). Para que sepa más hay que darle más ejemplos; el tamaño del modelo no sustituye a los datos. El informe `ami-base.report.md` muestra cómo responde a preguntas conocidas, reformuladas y ajenas.
+**Que sepa decir "no sé":** `data/fuera-de-tema-es.json` contiene preguntas ajenas al proyecto (capitales, precios, recetas, deportes…) con una respuesta de "no sé". Entrenar con ellas evita que el modelo improvise ante lo que no conoce; en ese caso `chat()` devuelve `intent: "unknown"`. Añade ahí más ejemplos de lo que NO quieres que responda (en minúsculas, sin tildes ni signos). Además, `confidence` es la probabilidad más baja de los primeros tokens de la respuesta, que son los que deciden qué se contesta.
+
+**Qué esperar:** con unos cientos de ejemplos el modelo aprende muy bien lo que está en los datos y entiende algunas reformulaciones, pero **no generaliza a temas que no vio**: puede contestar con seguridad algo equivocado. Por eso devuelve `confidence` y el bot vuelve al motor `native` cuando duda. Para que sepa más hay que darle más ejemplos; el tamaño del modelo no sustituye a los datos. El informe `ami-base.report.md` muestra cómo responde a preguntas conocidas, reformuladas y ajenas.
 
 Los pesos (`.amw`) se leen en `ai/neural-engine.js`, que comparte tokenizador y arquitectura con el entrenamiento; las pruebas comparan su salida con una referencia independiente en numpy y, en el CI, con PyTorch.
 
