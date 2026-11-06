@@ -6,7 +6,8 @@
   "exports": {
     ".": "./index.js",
     "./native": "./native.js",
-    "./neural": "./neural.js"
+    "./neural": "./neural.js",
+    "./mistral": "./API/mistral.js"
   },
   "type": "commonjs",
   "engines": {
