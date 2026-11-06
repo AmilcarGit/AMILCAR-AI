@@ -56,3 +56,18 @@ const resultado = await mistral.chat("Explícame la fotosíntesis", {
 - Necesita conexión a Internet y una clave válida con cuota disponible.
 - El plan gratuito, límites y modelos disponibles dependen de tu cuenta de Mistral.
 - Este cliente no entrena ni modifica los pesos del modelo. La memoria y el aprendizaje local son funciones separadas.
+
+
+## Integración directa con el SDK
+
+También puedes seleccionar Mistral desde la clase principal de AMILCAR-AI:
+
+```js
+const { AmilcarAI } = require("amilcar-ai");
+
+const ia = new AmilcarAI({ mode: "mistral" });
+const resultado = await ia.chat("Hola, ¿quién eres?");
+console.log(resultado.reply);
+```
+
+Configura `MISTRAL_API_KEY` en el entorno donde se ejecuta tu aplicación. Cada instalación debe usar una clave propia; el repositorio público no incluye claves compartidas. También puedes importar el cliente directamente con `require("amilcar-ai/mistral")`.
