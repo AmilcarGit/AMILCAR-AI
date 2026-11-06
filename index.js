@@ -1,5 +1,6 @@
 "use strict";
 
+const { MistralClient } = require("./API/mistral");
 const path = require("path");
 const { spawn, execFile } = require("child_process");
 const { promisify } = require("util");
@@ -20,7 +21,7 @@ class AmilcarAIError extends Error {
 class AmilcarAI {
   constructor(options = {}) {
     this.mode = options.mode || process.env.AMILCAR_AI_MODE || "local";
-    if (!["api", "local", "hybrid", "cloud"].includes(this.mode)) throw new TypeError("mode debe ser 'api', 'local', 'hybrid' o 'cloud'.");
+    if (!["api", "local", "hybrid", "cloud", "mistral"].includes(this.mode)) throw new TypeError("mode debe ser 'api', 'local', 'hybrid', 'cloud' o 'mistral'.");
     this.timeout = positiveInteger(options.timeout ?? 30000, "timeout");
     this.maxMessageLength = positiveInteger(options.maxMessageLength ?? 2000, "maxMessageLength");
     this.python = options.python || process.env.AMILCAR_AI_PYTHON || "python";
@@ -28,6 +29,10 @@ class AmilcarAI {
     this._workerReady = null;
     this._pending = new Map();
     this._nextId = 1;
+
+    if (this.mode === "mistral") {
+      this.mistral = new MistralClient({ apiKey: options.apiKey, model: options.model, baseURL: options.baseURL, timeout: options.timeout, fetch: options.fetch });
+    }
 
     if (this.mode === "cloud") {
       const baseURL = options.baseURL || process.env.AMILCAR_AI_URL || "https://openrouter.ai/api/v1";
@@ -58,6 +63,7 @@ class AmilcarAI {
   }
 
   async health(options = {}) {
+    if (this.mode === "mistral") return { ready: Boolean(this.mistral.apiKey), model: this.mistral.model, mode: "mistral", local: false };
     if (this.mode === "cloud") return { ready: Boolean(this.apiKey), model: this.model, mode: "cloud", local: false };
     if (this.mode === "hybrid") return { ready: true, model: "AMI-Nano-Hybrid", mode: "hybrid", local: true };
     if (this.mode === "local") {
@@ -75,6 +81,11 @@ class AmilcarAI {
     }
 
     if (this.mode === "hybrid") return this._chatHybrid(text.trim(), options.signal);
+
+    if (this.mode === "mistral") {
+      const result = await this.mistral.chat(text.trim(), options);
+      return { reply: result.reply, model: result.model, trained: false, mode: "mistral", provider: "mistral", usage: result.usage };
+    }
 
     if (this.mode === "cloud") {
       if (!this.apiKey) throw new AmilcarAIError("Falta OPENROUTER_API_KEY. Crea una clave en OpenRouter y configúrala como variable de entorno.", { code: "MISSING_API_KEY" });
