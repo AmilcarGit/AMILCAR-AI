@@ -470,3 +470,20 @@ El código de este proyecto se distribuye bajo la licencia [MIT](LICENSE). La li
 <a href="https://github.com/AmilcarGit/AMILCAR-AI">⭐ Explorar el repositorio</a>
 
 </div>
+
+
+## 🌐 Modo Mistral (API)
+
+También puedes utilizar Mistral AI desde el SDK principal:
+
+```js
+const { AmilcarAI } = require("amilcar-ai");
+
+const ia = new AmilcarAI({ mode: "mistral" });
+const respuesta = await ia.chat("Explícame la fotosíntesis");
+console.log(respuesta.reply);
+```
+
+Configura `MISTRAL_API_KEY` como variable de entorno en el dispositivo o servicio donde se ejecuta el bot. Opcionalmente, configura `MISTRAL_MODEL` (por defecto: `mistral-small-latest`). Consulta [API/README.md](API/README.md) para ver la instalación y configuración.
+
+**Importante:** el código de integración es público, pero cada instalación necesita una clave Mistral válida propia. No se incluye ninguna clave privada en este repositorio; las solicitudes se envían a Mistral y dependen de la cuota y condiciones de esa cuenta.
