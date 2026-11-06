@@ -71,6 +71,12 @@ AMILCAR-AI/
 
 Los componentes opcionales (GGUF, API y Python) se mantienen separados: el motor `native` no necesita Internet, claves, dependencias externas ni descargar modelos. La lista muestra las rutas principales conocidas del proyecto, no implica que cada carpeta opcional sea necesaria para usar el modo nativo.
 
+## 🧪 Fine-tuning local de AMI (LoRA)
+
+El repositorio incluye un flujo opcional para personalizar AMI con Unsloth y Qwen3.5-4B, exportar a GGUF y ejecutar con Ollama. Requiere GPU NVIDIA para entrenar y no altera el motor JavaScript ni la integración con bots.
+
+👉 **[Guía de entrenamiento, dataset y ejecución local](training/README.md)**
+
 ## 💫 ✨ Características ✨ 💫
 
 - **SDK para Node.js:** integra el motor desde proyectos JavaScript compatibles con CommonJS.
